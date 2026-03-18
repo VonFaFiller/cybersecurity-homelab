@@ -107,8 +107,7 @@ This distinction is central to the project:
 ## Practical Constraints
 This lab is being designed around a single host system with **32 GB RAM**.
 
-Because of that, the project is structured to avoid treating all components as permanently active at the same time.  
-Security Onion Standalone is expected to be the most resource-intensive component, while Ubuntu and Windows VM usage will be adjusted according to the exercise being performed.
+Because of that, the project is structured to avoid treating all components as permanently active at the same time. VM resources (CPU and RAM) are dynamically reallocated depending on the active lab components, with Security Onion Standalone expected to require the majority of available resources. Ubuntu and Windows VM usage will be scaled accordingly based on the current exercise.
 
 ## Planned Use Cases
 The lab is intended to support exercises such as:
