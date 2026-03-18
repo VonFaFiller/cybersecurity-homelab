@@ -24,10 +24,10 @@ This lab is being developed to support practical learning in:
 ### Completed
 - VMware environment prepared
 - Ubuntu virtual machine installed
+- Windows virtual machine installed
 
 ### In Progress / Planned
 - Ubuntu baseline configuration and basic administration practice
-- Windows virtual machine installation
 - Security Onion Standalone deployment
 - Virtual network design and validation
 - Initial logging, telemetry, and analysis exercises
