@@ -58,6 +58,7 @@ At this stage, the lab will support both:
 ### Stage 3 — Controlled and Realistic Observation
 The environment will then be used in multiple ways depending on the exercise:
 
+- **Ubuntu VM + Windows VM**
 - **Security Onion + Windows host**
 - **Security Onion + Ubuntu VM**
 - **Security Onion + Windows host + Ubuntu VM**
