@@ -20,3 +20,4 @@ Set up a Linux virtual machine for system administration, networking exercises, 
 - Ubuntu will be used as a secondary system for generating traffic and testing interactions with Windows
 - System packages were updated after installation
 - One package was temporarily deferred due to Ubuntu phased updates
+- Installed open-vm-tools using apt install open-vm-tools open-vm-tools-desktop
