@@ -13,7 +13,7 @@ This baseline is needed to identify what is normal in the system before introduc
 - Default Windows services active immediately after installation
 - Multiple background processes present in a clean default installation
 - Several active network connections observed after installation
-- Common listening ports include local Windows service ports
+- Several listening ports active by default (e.g. 135, 445)
 - Default local accounts include built-in system accounts in addition to the active user
 - The system shows significantly more background activity than the Ubuntu VM baseline
 
