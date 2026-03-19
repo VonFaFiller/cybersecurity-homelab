@@ -20,6 +20,8 @@ Create a Windows VM for controlled testing and lab usage.
 - VM resources (CPU and RAM) are adjustable depending on the lab phase
 - This VM will be used as a controlled sandbox, not as the primary endpoint
 - The Windows host system will serve as the main realistic endpoint
+- Windows Update was completed after installation
+- VMware Tools were installed after the initial setup
 
 ## Issues
 - VM initially attempted PXE boot instead of loading the ISO
