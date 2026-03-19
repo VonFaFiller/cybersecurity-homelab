@@ -21,3 +21,4 @@ Set up a Linux virtual machine for system administration, networking exercises, 
 - System packages were updated after installation
 - One package was temporarily deferred due to Ubuntu phased updates
 - open-vm-tools and open-vm-tools-desktop installed for improved VM integration (display, input, clipboard)
+- baseline snapshot created: ubuntu-clean
