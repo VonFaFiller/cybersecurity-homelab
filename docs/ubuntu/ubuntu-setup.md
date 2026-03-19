@@ -1,6 +1,6 @@
 # Ubuntu VM Setup
 
-## Goal
+## Objective
 Set up a Linux virtual machine for system administration, networking exercises, and controlled traffic generation within the lab.
 
 ## Configuration
