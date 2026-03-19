@@ -1,6 +1,6 @@
 # Windows 11 VM Setup
 
-## Goal
+## Objective
 Create a Windows VM for controlled testing and lab usage.
 
 ## Configuration
