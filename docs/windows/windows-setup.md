@@ -22,6 +22,7 @@ Create a Windows VM for controlled testing and lab usage.
 - The Windows host system will serve as the main realistic endpoint
 - Windows Update was completed after installation
 - VMware Tools were installed after the initial setup
+- baseline snapshot created: windows-clean
 
 ## Issues
 - VM initially attempted PXE boot instead of loading the ISO
