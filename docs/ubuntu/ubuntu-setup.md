@@ -18,3 +18,5 @@ Set up a Linux virtual machine for system administration, networking exercises, 
 ## Notes
 - VM resources (CPU and RAM) can be adjusted depending on the lab phase
 - Ubuntu will be used as a secondary system for generating traffic and testing interactions with Windows
+- System packages were updated after installation
+- One package was temporarily deferred due to Ubuntu phased updates
