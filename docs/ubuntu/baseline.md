@@ -14,3 +14,6 @@ This baseline is needed to identify what is normal in the system before introduc
 - Logging services active
 - No unexpected services observed
 - Expected listening ports include SSH and local DNS-related services
+
+## Result
+Initial system state recorded successfully.
