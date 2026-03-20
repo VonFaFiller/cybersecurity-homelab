@@ -148,10 +148,9 @@ docs/
 ## Documentation Approach
 Each technical note or setup document should aim to include:
 
-- objective
+- Objective
 - Why this matters
 - Observations
-- problems encountered
 - Result
 - Notes / Issues quando servono
 
