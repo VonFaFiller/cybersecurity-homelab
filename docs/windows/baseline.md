@@ -17,5 +17,8 @@ This baseline is needed to identify what is normal in the system before introduc
 - Default local accounts include built-in system accounts in addition to the active user
 - The system shows significantly more background activity than the Ubuntu VM baseline
 
+## Result
+Initial system state recorded successfully.
+
 ## Notes
 - Compared to a stripped or customized Windows install, the default installation includes substantially more background activity and pre-enabled components
