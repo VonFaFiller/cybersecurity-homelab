@@ -152,7 +152,7 @@ Each technical note or setup document should aim to include:
 - Why this matters
 - Observations
 - Result
-- Notes / Issues quando servono
+- Notes (if needed)
 
 ## AI Usage Disclosure
 For transparency: AI was used only to assist with the wording, grammar, formatting, and structure of this documentation.
