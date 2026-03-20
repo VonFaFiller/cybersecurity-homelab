@@ -81,7 +81,7 @@ The Windows VM is intended to remain a **sandbox system**, not the primary endpo
   - used for Linux administration, services, networking, and controlled test traffic
 
 - **Windows VM**
-  - planned
+  - currently installed
   - used as a reversible sandbox for controlled Windows exercises
 
 - **Security Onion Standalone**
@@ -140,26 +140,20 @@ The documentation is meant to show actual progression, including incomplete phas
 ## Planned Repository Structure
 ```text
 - README.md
-- docs/
-  - setup/
-  - ubuntu/
-  - windows/
-  - network/
-  - security-onion/
-  - analysis/
-  - troubleshooting/
-- screenshots/
+docs/
+  ubuntu/
+    analysis/
+  windows/
 ```
 ## Documentation Approach
 Each technical note or setup document should aim to include:
 
 - objective
-- environment
-- steps performed
+- Why this matters
+- Observations
 - problems encountered
-- fixes applied
-- result
-- what was learned
+- Result
+- Notes / Issues quando servono
 
 ## AI Usage Disclosure
 For transparency: AI was used only to assist with the wording, grammar, formatting, and structure of this documentation.
