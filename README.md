@@ -153,6 +153,8 @@ Each technical note or setup document should aim to include:
 - Observations
 - Result
 - Notes (if needed)
+- Issues Encountered (if needed)
+- Resolution (if needed)
 
 ## AI Usage Disclosure
 For transparency: AI was used only to assist with the wording, grammar, formatting, and structure of this documentation.
