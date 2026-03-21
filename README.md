@@ -141,8 +141,8 @@ The documentation is meant to show actual progression, including incomplete phas
 ```text
 - README.md
 docs/
+  analysis/
   ubuntu/
-    analysis/
   windows/
 ```
 ## Documentation Approach
