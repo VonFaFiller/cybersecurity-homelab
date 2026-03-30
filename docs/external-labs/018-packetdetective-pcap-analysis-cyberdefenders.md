@@ -85,7 +85,6 @@ The goal is to reconstruct suspicious activity by identifying:
   - named pipe name
   - RPC interface name
   - requested operation
-- I lost too much time manually browsing protocols instead of forcing the search with a targeted filter.
 - From now on, named pipe questions will be handled with filters first, not by manually sorting protocols or guessing from dissections.
 
 ## Notes
