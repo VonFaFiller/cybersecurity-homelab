@@ -103,11 +103,12 @@ The same stream also made this question easy to answer, because the uploaded fil
 > [!NOTE]
 >This again shows how much the first question weakens the rest of the lab: once the attacker IP is known, a simple source-IP filter plus Follow HTTP Stream reveals multiple answers with very little additional analysis.
 
+
+### Q3 - After identifying the version of our web server service, what CVE number corresponds to the vulnerability the attacker exploited?
+
 > [!CAUTION]
 > Some of the following questions demand knowledge that the lab does not meaningfully train beforehand. Failing to answer them independently is therefore normal.
 > In practice, searching the observed details online can quickly lead to public solutions, which makes this approach weak from a learning perspective and exposes a clear limitation of this kind of lab.
-
-### Q3 - After identifying the version of our web server service, what CVE number corresponds to the vulnerability the attacker exploited?
 
 I saw that the version was 2023.11.3, and I also saw that the attacker was able to perform unauthorized actions and create a new admin account.
 I then searched those details on Google, and the answer appeared almost immediately. 
