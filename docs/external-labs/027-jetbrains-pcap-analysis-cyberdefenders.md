@@ -1,4 +1,4 @@
-# JetBrains Lab PCAP Analysis (CyberDefenders)
+# JetBrains - PCAP Analysis (CyberDefenders)
 
 ## Scenario
 During a recent security incident, an attacker successfully exploited a vulnerability in our web server, allowing them to upload webshells and gain full control over the system. 
