@@ -64,9 +64,6 @@ By reading the commands in order, it was easy to spot which one appeared to fail
 
 **Answer:** `docker run --rm -it -v /:/host ubuntu chroot /host`
 
-> [!NOTE]
->I Repeat: this reasoning was only possible because the attacker host had already been identified much earlier in the lab. In a realistic investigation, that attribution would normally come later, after a fuller reconstruction of the traffic and actions. Here, the closed nature of the dataset made this kind of shortcut possible.
-
 ### Q2 - To identify potential vulnerability exploitation, what version of our web server service is running?
 
 For the second question, I filtered the traffic with the attacker source `IP and HTTP: ip.src == 23.158.56.196 && http`.
