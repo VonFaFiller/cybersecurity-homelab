@@ -12,7 +12,7 @@ Your task is to investigate the network logs and examine captured network traffi
 > [!IMPORTANT]
 > The questions below are not in the original lab order. I arranged them in the order that best matched my investigation flow.
 
-### Q1 - Identifying the attacker's IP address helps trace the source and stop further attacks. What is the attacker's IP address?
+### Q1 - In the context of the incident described in the scenario, the attacker initiated their actions by taking advantage of benign network traffic from legitimate machines. Can you identify the specific mistyped query made by the machine with the IP address 192.168.232.162?
 
 For this question, I immediately filtered on the source IP with `ip.src == 192.168.232.162` and scrolled through the results.
 Since the visible traffic was already very limited, there was no need to apply any additional filters. By checking the Info column, I could see that the mistyped query was FILESHAARE.
