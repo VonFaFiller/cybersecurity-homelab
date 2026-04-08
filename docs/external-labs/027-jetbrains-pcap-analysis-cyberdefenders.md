@@ -18,8 +18,8 @@ For the first question, I immediately isolated the HTTP traffic and then went to
 
 <img width="330" height="229" alt="immagine" src="https://github.com/user-attachments/assets/ef2f5092-df51-46c1-83ba-7b6c4793cb94" />
 
-Because the exercise is a closed lab, this was enough to get a quick idea of which hosts were likely acting as the server, but it was not a real attribution by itself.
-But this was useful, because from the Conversations view we can already infer that `172.x.x.x` was most likely acting as the server in the context of the lab.
+Because the exercise is a closed lab, this was enough to get a quick idea of which hosts were likely acting as the server, although it was not a real attribution by itself.
+It was still useful, because from the Conversations view I could already infer that `172.x.x.x` was most likely acting as the server in the context of the lab.
 The decisive clue appeared almost too early: while reviewing the HTTP requests, I quickly scrolled down and saw a suspicious POST request referencing a plugin path.
 
 <img width="883" height="514" alt="immagine" src="https://github.com/user-attachments/assets/8b2832f6-5994-4e36-b4bd-a7c5d60ee8f4" />
