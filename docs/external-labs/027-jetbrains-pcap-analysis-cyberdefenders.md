@@ -9,6 +9,9 @@ As part of the investigation, You are provided with a packet capture (PCAP) of t
 ## References
 -https://cyberdefenders.org/blueteam-ctf-challenges/jetbrains/
 
+> [!IMPORTANT]
+> The questions below are not in the original lab order. I arranged them in the order that best matched my investigation flow.
+
 ### Q1 - Identifying the attacker's IP address helps trace the source and stop further attacks. What is the attacker's IP address?
 
 For the first question, I immediately isolated the HTTP traffic and then went to Statistics → Conversations, where I sorted the conversations by packet count.
@@ -27,6 +30,7 @@ I then checked the source of that request, saw that it came from the 23.158.56.1
 <img width="466" height="64" alt="immagine" src="https://github.com/user-attachments/assets/02fc6fe1-532f-4756-8e6f-1834f7c0f2c8" />
 
 **Answer:** `23.158.56.196`
+
 > [!NOTE]
 This reasoning worked here only because the dataset is closed and the question is asked far too early.
 In a realistic investigation, identifying the attacker IP would make sense much later, only after reconstructing the roles, requests, actions, and sequence of events. 
@@ -39,6 +43,7 @@ I used the filter `ip.src == 23.158.56.196 && frame contains "cmd" && http` to i
 <img width="1191" height="141" alt="immagine" src="https://github.com/user-attachments/assets/66251a79-b4d4-4fe9-8f5b-3171233ca64e" />
 
 **Answer:** `2024-06-30 08:03`
+
 ### Q9 - The attacker tampered with a text file that contained the credentials of the admin user of the webserver. What new username and password did the attacker write in the file?
 
 For this question, I scrolled further down the request list, since there were only a few iterations to review. The modified text file appeared almost immediately, making the new username and password easy to identify. For a clearer view of the full context, Follow HTTP Stream can also be used.
@@ -46,6 +51,7 @@ For this question, I scrolled further down the request list, since there were on
 <img width="817" height="75" alt="immagine" src="https://github.com/user-attachments/assets/9b383c58-13c7-459e-9650-9f07a69a0ed6" />
 
 **Answer:** `a1l4m:youarecompromised`
+
 ### Q7 - The attacker tried to escape from the container but he didn’t succeed, What is the command that he used for that?
 
 This question could be answered quickly by keeping the requests in chronological order and following the cmd sequence. 
@@ -54,7 +60,9 @@ By reading the commands in order, it was easy to spot which one appeared to fail
 <img width="1038" height="135" alt="immagine" src="https://github.com/user-attachments/assets/b7a1048f-7704-4788-8615-1d1d1a4d8468" />
 
 <img width="603" height="70" alt="immagine" src="https://github.com/user-attachments/assets/d2750eff-5f42-41a3-a0df-fc5127bf4f4e" />
+
 **Answer:** `docker run --rm -it -v /:/host ubuntu chroot /host`
+
 > [!NOTE]
 >I Repeat: this reasoning was only possible because the attacker host had already been identified much earlier in the lab. In a realistic investigation, that attribution would normally come later, after a fuller reconstruction of the traffic and actions. Here, the closed nature of the dataset made this kind of shortcut possible.
 
@@ -71,6 +79,7 @@ In that stream, the server version `2023.11.3` was clearly visible, so the answe
 <img width="1152" height="201" alt="immagine" src="https://github.com/user-attachments/assets/4a09146f-c2e8-4c0a-9b96-852276881683" />
 
 **Answer:** `2023.11.3`
+
 ### Q4 - The attacker exploited the vulnerability to create a user account. What credentials did he set up?
 
 Immediately below, the credentials requested in the question are also visible.
@@ -82,6 +91,7 @@ Immediately below, the credentials requested in the question are also visible.
 > This made the task partly dependent on guessing the expected input format rather than only identifying the correct data.
 
 **Answer:** `c91oyemw:CL5vzdwLuK`
+
 ### Q5 - The attacker uploaded a webshell to ensure his access to the system. What is the name of the file that the attacker uploaded?
 
 The same stream also made this question easy to answer, because the uploaded file name `NSt8bHTg.zip` was visible directly in the multipart upload content.
@@ -89,6 +99,7 @@ The same stream also made this question easy to answer, because the uploaded fil
 <img width="801" height="101" alt="immagine" src="https://github.com/user-attachments/assets/8732f2f8-072d-4961-a104-29c871ac41da" />
 
 **Answer:** `NSt8bHTg.zip`
+
 > [!NOTE]
 >This again shows how much the first question weakens the rest of the lab: once the attacker IP is known, a simple source-IP filter plus Follow HTTP Stream reveals multiple answers with very little additional analysis.
 
@@ -104,6 +115,7 @@ I then searched those details on Google, and the answer appeared almost immediat
 <img width="653" height="283" alt="immagine" src="https://github.com/user-attachments/assets/db3bd025-45e9-4fc1-8b99-49f69caac612" />
 
 **Answer:** `CVE-2024-27198`
+
 > [!NOTE]
 >This was not a very realistic way to reach the result, but that is how this lab worked in practice.
 
