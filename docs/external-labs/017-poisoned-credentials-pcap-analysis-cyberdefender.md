@@ -57,7 +57,7 @@ That was enough to identify the compromised username as `janesmith`.
 
 ### Q5 - As part of our investigation, we aim to understand the extent of the attacker's activities. What is the hostname of the machine that the attacker accessed via SMB?
 
-For this question, I reused the same `SMB` authentication sequence from the previous step.
+For this question, I reused the same `SMB2` authentication sequence from the previous step.
 I only had to move one packet above, because the `NTLMSSP_AUTH` packet was useful for the username, while the preceding `NTLMSSP_CHALLENGE` packet was the one carrying the target host information. 
 In that response, the `Target Info` section exposed the machine identity, and the hostname was visible directly under NetBIOS computer name as `ACCOUNTINGPC`.
 
