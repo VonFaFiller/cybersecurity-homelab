@@ -45,7 +45,7 @@ For this question, I scrolled further down the request list, since there were on
 
 <img width="817" height="75" alt="immagine" src="https://github.com/user-attachments/assets/9b383c58-13c7-459e-9650-9f07a69a0ed6" />
 
-### Answer: docker run --rm -it -v /:/host ubuntu chroot /host
+### Answer: a1l4m:youarecompromised
 ### Q7 - The attacker tried to escape from the container but he didn’t succeed, What is the command that he used for that?
 
 This question could be answered quickly by keeping the requests in chronological order and following the cmd sequence. 
@@ -54,8 +54,7 @@ By reading the commands in order, it was easy to spot which one appeared to fail
 <img width="1038" height="135" alt="immagine" src="https://github.com/user-attachments/assets/b7a1048f-7704-4788-8615-1d1d1a4d8468" />
 
 <img width="603" height="70" alt="immagine" src="https://github.com/user-attachments/assets/d2750eff-5f42-41a3-a0df-fc5127bf4f4e" />
-
-### Answer: a1l4m:youarecompromised
+### Answer: docker run --rm -it -v /:/host ubuntu chroot /host
 > [!NOTE]
 >I Repeat: this reasoning was only possible because the attacker host had already been identified much earlier in the lab. In a realistic investigation, that attribution would normally come later, after a fuller reconstruction of the traffic and actions. Here, the closed nature of the dataset made this kind of shortcut possible.
 
