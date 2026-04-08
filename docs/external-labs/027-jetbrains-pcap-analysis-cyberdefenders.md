@@ -115,9 +115,6 @@ I then searched those details on Google, and the answer appeared almost immediat
 
 **Answer:** `CVE-2024-27198`
 
-> [!NOTE]
->This was not a very realistic way to reach the result, but that is how this lab worked in practice.
-
 ### Q8 - What is the MITRE Technique ID for the attacker's action in the previous question (Q7) when tampering with the text file?
 
 For this question, the process was very similar to the previous one.
