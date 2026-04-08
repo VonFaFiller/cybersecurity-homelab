@@ -121,7 +121,7 @@ I then searched those details on Google, and the answer appeared almost immediat
 
 ### Q8 - What is the MITRE Technique ID for the attacker's action in the previous question (Q7) when tampering with the text file?
 
-see above, almost the same
+For this question, the process was very similar to the previous one.
 
 <img width="649" height="272" alt="immagine" src="https://github.com/user-attachments/assets/82696e30-b1e5-49df-bd4d-e1048c1862f4" />
 
