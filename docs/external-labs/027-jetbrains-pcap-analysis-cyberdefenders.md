@@ -7,7 +7,7 @@ The attacker utilized the compromised web server as a launch point for further m
 As part of the investigation, You are provided with a packet capture (PCAP) of the network traffic during the attack to piece together the attack timeline and identify the methods used by the attacker. The goal is to determine the initial entry point, the attacker's tools and techniques, and the compromise's extent.
 
 ## References
--https://cyberdefenders.org/blueteam-ctf-challenges/jetbrains/
+- https://cyberdefenders.org/blueteam-ctf-challenges/jetbrains/
 
 > [!IMPORTANT]
 > The questions below are not in the original lab order. I arranged them in the order that best matched my investigation flow.
@@ -100,7 +100,6 @@ The same stream also made this question easy to answer, because the uploaded fil
 
 > [!NOTE]
 >This again shows how much the first question weakens the rest of the lab: once the attacker IP is known, a simple source-IP filter plus Follow HTTP Stream reveals multiple answers with very little additional analysis.
-
 
 ### Q3 - After identifying the version of our web server service, what CVE number corresponds to the vulnerability the attacker exploited?
 
