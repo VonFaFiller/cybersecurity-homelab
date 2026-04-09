@@ -1,100 +1,109 @@
 # PacketDetective – PCAP Analysis (CyberDefenders)
 
-## Objective
-Analyze multiple PCAP segments to identify suspicious authentication activity, remote administrative behavior, event log tampering, named pipe usage, and covert account setup across Windows network traffic.
-
 ## Scenario
-The exercise is based on packet captures containing SMB, SMB2, NTLMSSP, DCE/RPC, and related Windows administrative traffic.
+In September 2020, your SOC detected suspicious activity from a user device, flagged by unusual SMB protocol usage.
+Initial analysis indicates a possible compromise of a privileged account and remote access tool usage by an attacker.
 
-The goal is to reconstruct suspicious activity by identifying:
-- authentication behavior
-- event log clearing attempts
-- named pipe usage
-- covert username creation or usage
-- communication duration between specific hosts
+Your task is to examine network traffic in the provided PCAP files to identify key indicators of compromise (IOCs) and gain insights into the attacker’s methods, persistence tactics, and goals.
+Construct a timeline to better understand the progression of the attack by addressing the following questions.
 
 ## References
-- https://cyberdefenders.org/blueteam-ctf-challenges/achievements/VonFaFiller/packetdetective/
-- https://cyberdefenders.org/walkthroughs/packetdetective/
+- https://cyberdefenders.org/blueteam-ctf-challenges/packetdetective/
 
-## Tools Used
-- Wireshark
-- Statistics → Conversations
-- SMB / SMB2 packet inspection
-- NTLMSSP field analysis
-- DCE/RPC packet inspection
-- Packet Bytes pane
-- raw byte filters using `frame contains`
+> [!IMPORTANT]
+This lab is split across three separate files, and the questions are effectively distributed across them.
+It is also worth noting that many of the answers are relatively easy to reach because the dataset is small and limited in scope.
+In several cases, the relevant evidence can be identified directly without needing deeper reconstruction or broader correlation.
+>
 
-## Investigation Workflow
-1. Identified suspicious SMB and SMB2 authentication traffic and extracted usernames from NTLM authentication messages.
-2. Used Wireshark statistics to review communication duration between the relevant hosts.
-3. Investigated event log clearing activity by isolating the corresponding request and checking the real UTC timestamp.
-4. Traced remote administrative behavior across SMB, SMB2, and DCE/RPC traffic.
-5. Pivoted into named pipe analysis when standard packet summaries were not sufficient.
-6. Applied a raw byte filter for `\PIPE` to locate the actual pipe name inside Packet Bytes.
-7. Distinguished between transport, named pipe, RPC interface, operation name, and username.
 
-## Key Evidence
-- Suspicious host pair observed in one communication flow:
-  - `172.16.66.1`
-  - `172.16.66.36`
-- Named pipe value identified in raw packet bytes:
-  - `\PIPE\atsvc`
-- Pipe token used as the answer:
-  - `atsvc`
-- DCE/RPC traffic was observed after the SMB and SMB2 transport stage.
-- NTLM authentication messages exposed a non-standard username used in suspicious requests.
-- Event log clearing activity was visible through `ClearEventLog request`.
-- Duration-related questions were answered through Wireshark statistics rather than packet-by-packet inspection.
+### Q1 - The attacker’s activity showed extensive SMB protocol usage, indicating a potential pattern of significant data transfer or file access. What is the total number of bytes of the SMB protocol?
 
-## Findings
-- Most of the exercise was relatively direct once the correct protocol or packet type was selected.
-- Username-related questions were answered by pivoting to:
-  - `Session Setup`
-  - `NTLMSSP_AUTH`
-- Duration-related questions were answered more efficiently from:
-  - `Statistics`
-  - `Conversations`
-- Event log clearing questions required reading the real packet timestamp rather than the relative `Time` column.
-- The most difficult part of the exercise was identifying the named pipe correctly.
-- That question was objectively more awkward than the rest of the lab because the answer was not clearly exposed in the higher-level dissections.
-- The wording also made the pivot less obvious, because the expected answer was the pipe token rather than the RPC interface name.
-- The useful string had to be extracted from raw frame content and Packet Bytes instead of from the more convenient protocol summary fields.
+For the first question, I went to `Statistics → Protocol Hierarchy` and read the total number of `bytes` directly from the `SMB (Server Message Block Protocol)` entry. That value corresponded directly to the answer.
 
-## Result
-- The lab reinforced practical packet analysis for:
-  - SMB / SMB2
-  - NTLMSSP authentication
-  - DCE/RPC communication
-  - event log tampering
-  - named pipe identification
-- The hardest friction point was the named pipe question.
-- The rest of the lab was significantly more linear and easier to map from question to field.
-- Time spent struggling on the named pipe was not wasted:
-  - it led to a much better understanding of how SMB and SMB2 transport DCE/RPC traffic
-  - it also made later username identification much faster because the NTLM authentication flow became clearer
+<img width="946" height="117" alt="immagine" src="https://github.com/user-attachments/assets/933a5a5b-0f33-482d-b488-3452b5025ab4" />
 
-## Mistakes / Friction Points
-- The main error was not technical inability, but choosing the wrong evidence layer for the question.
-- I initially treated the named pipe question as if the answer should come directly from:
-  - SMB2 summaries
-  - DCE/RPC context items
-  - RPC interface names
-- This led to confusion between:
-  - named pipe name
-  - RPC interface name
-  - requested operation
-- From now on, named pipe questions will be handled with filters first, not by manually sorting protocols or guessing from dissections.
 
-## Notes
-- Spending too much time on the named pipe question still had a useful outcome.
-- It forced a deeper inspection of DCE/RPC than I would normally have done in a simple easy-level lab.
-- Because of that, I now understand the chain more clearly:
-  - `TCP`
-  - `SMB / SMB2`
-  - `named pipe`
-  - `DCE/RPC`
-  - `authentication / request / response`
-- That extra effort did not help only for the pipe question.
-- It also made later username identification much faster because I understood where NTLM authentication details actually appeared.
+**Answer:** `4406`
+
+### Q2 - Authentication through SMB was a critical step in gaining access to the targeted system. Identifying the username used for this authentication will help determine if a privileged account was compromised. Which username was utilized for authentication via SMB?
+
+Then I filtered the traffic to `SMB` and scrolled through the packets in chronological order to understand what was happening in the authentication sequence.
+By reviewing the Info column, I could see a Session Setup AndX Request, `NTLMSSP AUTH` entry showing `User: \Administrator`. 
+In the context of the lab, that was enough to identify the username used for `SMB` authentication as Administrator.
+
+<img width="1482" height="112" alt="immagine" src="https://github.com/user-attachments/assets/fd56cc14-1e5e-4503-8124-af1b6ba60aee" />
+
+
+**Answer:** `Administrator`
+
+### Q3 - During the attack, the adversary accessed certain files. Identifying which files were accessed can reveal the attacker's intent. What is the name of the file that was opened by the attacker?
+
+For this question, I kept reviewing the `smb` traffic in chronological order. In the **Info** column, one of the packets showed an `NT Create AndX Request` with `Path: \eventlog`, and the same value was also visible in the packet details under `File Name`. In the context of the lab, that was enough to identify `eventlog` as the name of the file opened by the attacker.
+
+<img width="1427" height="113" alt="immagine" src="https://github.com/user-attachments/assets/f841b240-b495-4481-99fe-4a31d9154107" />
+
+**Answer:** `eventlog`
+
+### Q4 - Clearing event logs is a common tactic to hide malicious actions and evade detection. Pinpointing the timestamp of this action is essential for building a timeline of the attacker’s behavior. What is the timestamp of the attempt to clear the event log? (24-hour UTC format)
+
+For this question, I first changed the time display format from `View → Time Display Format` so the timestamp would be easier to read in the format required by the lab.
+I then filtered the traffic as shown in the screenshot and reviewed the `EVENTLOG` packets in chronological order.
+From there, it was easy to identify the `ClearEventLogW request` and read the corresponding timestamp directly.
+
+<img width="1136" height="115" alt="immagine" src="https://github.com/user-attachments/assets/b0f32973-5f52-4e08-8789-a4fd573f8f6a" />
+
+
+> [!NOTE]
+> This could have been filtered in more precise ways, but in this case there was no real need to do so.
+>  The important point here is to recognize that the `EVENTLOG` protocol is present and that attackers may try to remove traces in different ways, including by clearing event logs through this type of request.
+
+
+**Answer:** `2020-09-23 16:50`
+
+### Q5 - The attacker used "named pipes" for communication, suggesting they may have utilized Remote Procedure Calls (RPC) for lateral movement across the network. RPC allows one program to request services from another remotely, which could grant the attacker unauthorized access or control. What is the name of the service that communicated using this named pipe?
+
+For this question, I used the `isystemactivator` filter to isolate the traffic related to remote activation and object creation. 
+I chose it because the question was asking about the service communicating through a named pipe, so it made sense to focus on the part of the RPC/DCOM exchange where that information was more likely to appear directly.
+This step was not as immediate as some of the previous ones, because the answer was not exposed in a simple filename or username field.
+Instead, it had to be identified inside the protocol details, where the named pipe appeared as `\PIPE\atsvc`.
+
+<img width="917" height="718" alt="immagine" src="https://github.com/user-attachments/assets/d4cc52ff-3a32-4688-a4a3-7148b710fe91" />
+
+
+> [!NOTE]
+> A named pipe is a communication channel often used by Windows services and RPC mechanisms to exchange data locally or remotely.
+> In this case, `atsvc` is the named pipe associated with the Windows Task Scheduler / AT service .
+> It is used to create and manage scheduled tasks remotely, which makes it relevant for remote execution and persistence.
+> (this is a much larger topic on its own)
+
+<img width="319" height="121" alt="immagine" src="https://github.com/user-attachments/assets/2c5c23d0-2efd-420e-bf5d-d8a54fa0394c" />
+
+
+**Answer:** `atsvc`
+
+### Q6 - Measuring the duration of suspicious communication can reveal how long the attacker maintained unauthorized access, providing insights into the scope and persistence of the attack. What was the duration of communication between the identified addresses 172.16.66.1 and 172.16.66.36?
+
+For this question, I went to `Statistics → Conversations` and moved the `Duration` column further to the left so it would be easier to read.
+This step was straightforward because the question had already specified exactly which two IP addresses to focus on, so the only thing left was to read the corresponding conversation duration directly.
+
+<img width="395" height="85" alt="immagine" src="https://github.com/user-attachments/assets/9fe01912-cefe-45c3-badc-a606296c7ef8" />
+
+**Answer:** `11.7247`
+
+### Q7 - The attacker used a non-standard username to set up requests, indicating an attempt to maintain covert access. Identifying this username is essential for understanding how persistence was established. Which username was used to set up these potentially suspicious requests?
+
+<img width="1340" height="260" alt="immagine" src="https://github.com/user-attachments/assets/b4834be2-2574-4af5-a3af-3766953020e6" />
+
+Opening the third file already made the answer visible almost immediately.
+The `Info` column showed `User: 3B\backdoor` within the first packets of the SMB sequence.
+I still reviewed the surrounding traffic to confirm it, but in the context of this easy lab the answer was already exposed very early.
+
+**Answer:** `backdoor`
+
+### Q8 - The attacker leveraged a specific executable file to execute processes remotely on the compromised system. Recognizing this file name can assist in pinpointing the tools used in the attack. What is the name of the executable file utilized to execute processes remotely? 
+
+Within the first SMB packets, the `Info` column showed `Create Request File: PSEXESVC.exe`, which was enough to identify the executable used for remote execution. 
+I then confirmed the context by looking at the nearby packets in the same SMB sequence, where the authentication, share access, and file creation activity all lined up with the same remote action.
+
+**Answer:** `PSEXESVC.exe`
