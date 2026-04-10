@@ -81,7 +81,8 @@ However, after isolating the `SMB` traffic, the target side of the second pivot 
 From there, it was possible to correlate the SMB activity toward `10.0.0.131` with the visible `BROWSER` host announcements showing `MARKETING-PC`, which was enough in the context of the lab to identify `Marketing-PC` as the second machine targeted by the attacker.
 
 
-<img width="1466" height="198" alt="immagine" src="https://github.com/user-attachments/assets/de6dd8d1-7aba-4587-9638-497b3f3901da" />
+<img width="1353" height="211" alt="immagine" src="https://github.com/user-attachments/assets/4264c81d-c752-41dd-ab9c-0b523ce90961" />
+
 
 > [!NOTE]
 > This could be treated as the second pivot target mainly because of **when** it appeared in the traffic.
