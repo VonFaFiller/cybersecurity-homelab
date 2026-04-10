@@ -98,9 +98,6 @@ The same stream also made this question easy to answer, because the uploaded fil
 
 **Answer:** `NSt8bHTg.zip`
 
-> [!NOTE]
->This again shows how much the first question weakens the rest of the lab: once the attacker IP is known, a simple source-IP filter plus Follow HTTP Stream reveals multiple answers with very little additional analysis.
-
 ### Q3 - After identifying the version of our web server service, what CVE number corresponds to the vulnerability the attacker exploited?
 
 > [!CAUTION]
