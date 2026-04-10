@@ -112,7 +112,6 @@ I then focused on the destination ports, since those are the ports that indicate
 
 In the screenshot, the repeated conversations from the external host toward the internal `192.168.196.x` range consistently showed destination port `445`, and additional conversations also showed destination port `1433`.
 Since those were the service ports repeatedly contacted on the target machines, I inferred that `445` and `1433` were the ports targeted by the attacker.
-Puoi aggiungere così:
 
 From the same view, it was also possible to infer that `185.245.85.178` was the main suspicious source, because those two destination ports were being stressed specifically by that IP across multiple conversations. 
 
