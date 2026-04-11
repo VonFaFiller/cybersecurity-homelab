@@ -145,5 +145,9 @@ In the response details, the important part is the **`Location`** header, becaus
 
 <img width="1322" height="414" alt="immagine" src="https://github.com/user-attachments/assets/5e1ea159-7f55-4b74-b5b9-f88829fe60cd" />
 
+> [!NOTE]
+> The observed request to `104.21.89.171` was made over **HTTP** as `GET /`, while the server replied with a **301 redirect** to `https://dfir.science/`.
+>  For this reason, the answer was kept as `http://dfir.science/`, since that is the URL actually requested in the visible exchange.
+
 **Answer:** `http://dfir.science/`
 
