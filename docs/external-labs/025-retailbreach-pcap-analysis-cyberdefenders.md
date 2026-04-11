@@ -1,4 +1,4 @@
-<img width="1249" height="550" alt="immagine" src="https://github.com/user-attachments/assets/aeb64896-6fb7-46c7-9b4f-cdf59d3b1ae8" /><img width="2560" height="1440" alt="immagine" src="https://github.com/user-attachments/assets/a7fa90a8-e62b-4f68-8500-fea8ee5c96a9" /># RetailBreach - PCAP Analysis (CyberDefenders)
+# RetailBreach - PCAP Analysis (CyberDefenders)
 
 ## Scenario
 In recent days, ShopSphere, a prominent online retail platform, has experienced unusual administrative login activity during late-night hours.
