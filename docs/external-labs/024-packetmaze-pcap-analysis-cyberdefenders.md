@@ -1,144 +1,149 @@
-# PacketMaze PCAP Analysis (CyberDefenders)
-
-## Objective
-Analyze a mixed-protocol PCAP to identify relevant client and server activity across FTP, DNS, TLS, and web traffic, reconstruct the meaning of challenge questions that were often written ambiguously, and recover the requested answers without confusing protocol roles or traffic layers.
+# PacketMaze - PCAP Analysis (CyberDefenders)
 
 ## Scenario
-The exercise is based on a PCAP containing several different types of traffic rather than a single narrowly scoped service interaction.
-
-The goal is to reconstruct the relevant activity by identifying:
-- the FTP credentials and file-transfer activity
-- the FTP server and its MAC-based vendor information
-- the IPv6 DNS server associated with the FTP host
-- the first TLS 1.3 client random used in a connection to `protonmail.com`
-- the non-standard folder timestamp visible through FTP directory listing activity
-- the URL associated with a connection to the IP address `104.21.89.171`
-- other protocol-specific details embedded in the traffic
+A company's internal server has been flagged for unusual network activity, with multiple outbound connections to an unknown external IP.
+Initial analysis suggests possible data exfiltration.
+Investigate the provided network logs to determine the source and method of compromise.
 
 ## References
-- CyberDefenders: PacketMaze Lab
-- Main protocol families observed during analysis:
-  - FTP / FTP-DATA
-  - DNS
-  - IPv6 / ICMPv6
-  - HTTP / HTTPS
-  - TLS 1.3
-  - Ethernet / MAC addressing
+- https://cyberdefenders.org/blueteam-ctf-challenges/packetmaze/
 
-## Tools Used
-- Wireshark
-- Statistics → Conversations
-- Statistics → Endpoints
-- Packet details pane
-- Follow TCP Stream
-- Display filters
-- OUI / MAC vendor lookup
-- External lookup for vendor-country enrichment when required
+### Q1 - What is the FTP password?
 
-## Investigation Workflow
-1. Reviewed the traffic at a high level to understand that the PCAP was not limited to a single service role, and that the client was interacting with FTP, DNS, and web services in parallel.
-2. Identified the FTP host and treated it as one node within a broader mixed-traffic scenario rather than assuming that every question referred only to FTP activity.
-3. Used FTP control traffic to identify commands, authentication behavior, and transfer intent.
-4. Distinguished FTP control traffic from FTP-DATA, because commands such as `LIST` only described the action, while the actual directory contents were carried on the associated data channel.
-5. Used passive-mode FTP logic only when necessary: starting from `LIST`, checking the preceding `227 Entering Passive Mode`, and then following the matching FTP data stream.
-6. Interpreted DNS-related questions carefully to avoid confusing the IPv4 client host with the IPv6 address of the DNS server it was using.
-7. Tracked MAC-level evidence separately from IP-level evidence, because some questions required vendor enrichment from the MAC OUI rather than any direct IP-based attribution.
-8. Used OUI resolution to identify the FTP server NIC vendor and noted that the final country-of-registration question required external enrichment rather than packet evidence alone.
-9. Examined TLS handshake traffic to clarify where `Client Hello`, `Server Hello`, and the `Client Random` actually appear, instead of answering by guesswork.
-10. For the `protonmail.com` question, used the `Client Hello` and TLS 1.3 context to isolate the right request chronologically, while also noting that some extra validation steps were curiosity-driven rather than strictly required by the lab.
-11. Interpreted IP-to-URL questions by treating them as web-traffic reconstruction problems rather than as questions about the FTP server itself.
-12. Explored transferred image content and metadata out of curiosity to confirm where file bytes and EXIF-style data actually travel inside FTP sessions.
+I first went to **Statistics → Conversations** to get a quick idea of the hosts present in the dataset, and from there I reasonably assumed that **`192.168.1.x`** was the internal subnet in this PCAP. 
+Then, in the second screenshot, I filtered on **`ftp`** and kept the packets in chronological order.
+At that point it was enough to read the **Info** column: the client sends **`PASS AfricaCTF2021`**, and the packet right after that says **`230 Login successful`**. 
+That implies the username and password used in that exchange were valid, so the FTP password can be answered directly from there.
 
-## Key Evidence
-- FTP server identified in the analysis:
-  - `192.168.1.26`
-- Important protocol distinction during analysis:
-  - FTP control traffic showed commands such as `USER`, `PASS`, `LIST`, `RETR`, `STOR`
-  - FTP-DATA carried the real file bytes and directory listing contents
-- Evidence relevant to passive FTP listing analysis:
-  - `227 Entering Passive Mode (...)`
-  - subsequent `FTP Data ... (PASV) (LIST)` stream
-- Evidence that the non-standard folder timestamp had to be read from data-channel output:
-  - the useful directory listing was not contained in the control-channel `LIST` request itself
-- FTP server MAC address identified during analysis:
-  - `c8:09:a8:57:47:93`
-- Vendor resolution derived from MAC OUI:
-  - `Intel`
-- DNS question clarification required during analysis:
-  - the challenge asked for the IPv6 address of the DNS server used by `192.168.1.26`
-  - it did **not** ask for the IPv6 address of `192.168.1.26` itself
-- TLS handshake clarification required during analysis:
-  - the `Client Random` was read from `Client Hello`
-  - the question wording did not require deeper validation of full connection establishment, although that possibility was considered
-- Web-traffic reconstruction clarification required during analysis:
-  - the IP `104.21.89.171` had to be mapped back to the URL/site visited by the client
-- Curiosity-driven validation about transferred files:
-  - image bytes and metadata were expected on FTP-DATA rather than on the FTP control channel
+<img width="196" height="389" alt="immagine" src="https://github.com/user-attachments/assets/9f247141-aa27-42fb-a9a0-64ba8ee3166b" />
+<img width="1216" height="257" alt="immagine" src="https://github.com/user-attachments/assets/4f356df9-cc59-4ec9-afef-492a3c9710c4" />
 
-## Findings
-- The main analytical difficulty in this lab was not packet complexity but question wording.
-- The traffic itself was mostly easy to interpret once the protocol role of each flow was understood.
-- The first major structural point was that the PCAP was mixed-protocol:
-  - **Observed:** FTP, DNS, TLS, and web-related traffic were all present
-  - **Conclusion:** not every question referred to the same host role or the same protocol context
-- A recurring source of friction was vague wording such as `the user`, `the server`, or `the URL visited`:
-  - **Observed:** several questions omitted the precise technical subject
-  - **Conclusion:** the real task was often to first translate the challenge wording into a precise network question before filtering packets
-- FTP required a specific control-versus-data distinction:
-  - **Observed:** `LIST` appeared on the control channel, but the actual directory contents did not
-  - **Observed:** the relevant listing appeared on the associated `FTP Data ... (PASV) (LIST)` stream
-  - **Conclusion:** following the control stream alone was insufficient for timestamp and folder-name questions
-- The MAC-vendor question also required a layer distinction:
-  - **Observed:** the packet evidence gave the MAC address and OUI-derived vendor
-  - **Conclusion:** the final country-of-registration answer required an external lookup and was not recoverable from the PCAP alone
-- The TLS 1.3 question was straightforward once the handshake structure was understood:
-  - **Observed:** the requested value was the `Random` field in `Client Hello`
-  - **Conclusion:** understanding the handshake was useful, but some extra reasoning about whether the connection was fully established went beyond what the challenge strictly required
-- The IP-to-URL question looked more confusing than it actually was:
-  - **Observed:** the scenario included both FTP and external web traffic
-  - **Conclusion:** the question was asking for the site associated with that IP, not for anything about the FTP server
-- Some of the deeper reasoning done during the lab was curiosity-driven rather than required:
-  - understanding why a host talks to DNS
-  - understanding where image metadata appears in FTP transfers
-  - understanding the structure of the TLS handshake
-- The rest of the lab was easy overall, and many answers were found immediately once the correct protocol perspective was chosen.
+**Answer:** `AfricaCTF2021`
 
-## Result
-- FTP Server: `192.168.1.26`
-- FTP Server MAC Address: `c8:09:a8:57:47:93`
-- FTP Server MAC Vendor: `Intel`
-- FTP Password: `<insert confirmed password>`
-- IPv6 DNS Server Used by `192.168.1.26`: `<insert confirmed IPv6 address>`
-- First TLS 1.3 Client Random for `protonmail.com`: `<insert confirmed client random>`
-- Non-Standard FTP Folder Timestamp on April 20: `<insert confirmed time>`
-- URL Connected to `104.21.89.171`: `<insert confirmed URL>`
-- Manufacturer Country for FTP Server MAC Vendor: `<insert confirmed country>`
+### Q2 - What is the IPv6 address of the DNS server used by `192.168.1.26`?
 
-## Mistakes / Friction Points
-- The main difficulty was the ambiguity of the challenge wording:
-  - several questions did not clearly specify whether they referred to a client, a server, an IP, a domain, or a protocol role
-- A second friction point was the lack of explicit context:
-  - the exercise did not clearly tell which host played which role
-  - this made some questions look more obscure than they really were
-- The FTP directory-listing part was made more tedious by the way it is usually explained:
-  - the control `LIST` request alone was not enough
-  - the real answer had to be read from the associated FTP data stream
-- Some additional time was spent on mechanism-level understanding out of curiosity rather than necessity:
-  - DNS communication logic
-  - TLS handshake structure
-  - metadata
-- The remaining parts that are not emphasized here were mostly easy and were often solved immediately once the protocol context was clear.
+For this question, it helps to be a bit clever about it. 
+The lab is asking for the **IPv6 address of the DNS server** that the host is using. 
+Briefly, **DNS** is the service that translates domain names into IP addresses.
+So I filtered on **`dns`**, and in the screenshot I highlighted two very similar lines.
 
-## Notes
-- In a real investigation, stronger context would normally already exist in the form of:
-  - asset inventory
-  - host naming
-  - network diagrams
-  - DHCP / DNS logs
-  - proxy or firewall logs
-- Because of that, many of the ambiguities present in this lab would usually be clarified much earlier in a real workflow.
-- For FTP-specific questions, server-side logs would confirm uploads, listings, and directory timestamps more directly than reconstructing them only from passive-mode packet traces.
-- For MAC-vendor questions, the PCAP can support vendor identification through OUI resolution, but not all enrichment details are contained in the packets themselves.
-- The curiosity-driven review of image transfers confirmed a useful practical rule:
-  - FTP control traffic shows commands and filenames
-  - FTP-DATA carries the actual file bytes and embedded metadata
+<img width="1755" height="390" alt="immagine" src="https://github.com/user-attachments/assets/2c32b6ec-cbef-40ec-9d62-03815d8578bf" />
+
+The important point is not just that they look similar, but that they are clearly tied to the same DNS activity: same type of query, same requested hostname, and in this case even the same **transaction ID `0x6820`**.
+From the IPv4 traffic above, we can already see that **`192.168.1.26`** is using **`192.168.1.10`** as its DNS server.
+Then, by looking at the highlighted IPv6 line below, we get their IPv6 addresses as well, and the **destination** address is the one we need. 
+So the IPv6 address of the DNS server used by the client is **`fe80::c80b:adff:feaa:1db7`**.
+
+**Answer:** `fe80::c80b:adff:feaa:1db7`
+
+### Q3 - What domain is the user looking up in packet `15174`?
+
+I kept the same **DNS** filter and just scrolled until I reached the packet mentioned in the question.
+Since the dataset is fairly small, there was no real need to apply any extra filtering. 
+At that point, it was enough to open the packet details and look under **Queries**, where the requested domain name is shown directly. From there, you can read **`www.7-zip.org`**.
+
+<img width="486" height="460" alt="immagine" src="https://github.com/user-attachments/assets/21353df6-9537-4314-952b-c0be866153a4" />
+
+**Answer:** `www.7-zip.org`
+
+### Q4 - How many UDP packets were sent from `192.168.1.26` to `24.39.217.246`?
+
+For the next question, I stayed in **Conversations** and isolated the two IP addresses mentioned in the prompt. 
+Once filtered to that pair, it was just a matter of counting the packets shown there: **1 + 9 = 10**, so the total number of UDP packets sent from **`192.168.1.26`** to **`24.39.217.246`** is **10**.
+
+<img width="341" height="87" alt="immagine" src="https://github.com/user-attachments/assets/213979e6-ad07-4fad-8a23-92115ede36a6" />
+
+**Answer:** `10`
+
+### Q5 - What is the MAC address of the system under investigation in the PCAP file?
+
+Going back to the earlier traffic where I was comparing the IPv4 and IPv6 activity, I just highlighted one of those packets, and I preferred using the first one. 
+The **source IP** there is the suspicious host, and in the same frame, under **Ethernet II**, the **source MAC address** is shown as well.
+So that packet is enough to read the MAC address of the system under investigation directly.
+
+<img width="629" height="280" alt="immagine" src="https://github.com/user-attachments/assets/8ccc3fdc-3155-49af-b929-0c9b4dc812a5" />
+
+**Answer:** `c8:09:a8:57:47:93`
+
+### Q6 - What was the camera model name used to take picture `20210429_152157.jpg`?
+
+Here I first tried to be a bit more precise by using a **`frame contains`** filter, but it did not work the way I wanted. 
+The reason is simply that the useful string is not always visible as a complete readable value in the exact frame you expect, so instead of forcing a filter that was not helping, I just adapted.
+
+<img width="1702" height="96" alt="immagine" src="https://github.com/user-attachments/assets/414a79fe-3820-4bb4-a23d-e83a0fa0e98b" />
+
+I kept the **`ftp-data`** filter, because at that point the traffic was already clean enough and most of the relevant packets were clearly the ones carrying the **`STOR`** command for the requested JPEG. From there I manually opened one of the many packets related to that file upload and used **Follow TCP Stream**. 
+
+<img width="1977" height="200" alt="immagine" src="https://github.com/user-attachments/assets/15d9a6c8-0a54-4584-b4d0-85268ec8306d" />
+<img width="2009" height="132" alt="immagine" src="https://github.com/user-attachments/assets/a86f588c-fc26-4699-99a5-aacff572dcf8" />
+<img width="1342" height="198" alt="immagine" src="https://github.com/user-attachments/assets/acdab722-fb8b-467c-953a-44d0cc943a3f" />
+
+In that stream, the transferred content becomes visible, and that is where the camera model asked by the question can be read, since that kind of information can appear inside the image metadata.
+
+**Answer:** `LM-Q725K`
+
+### Q7 - What is the ephemeral public key provided by the server during the TLS handshake in the session with the session ID `da4a0000342e4b73459d7360b4bea971cc303ac18d29b99067e46d16cc07f4ff`?
+
+This one was straightforward once I filtered on the session ID like this: `tls.handshake.session_id == da:4a:00:00:34:2e:4b:73:45:9d:73:60:b4:be:a9:71:cc:30:3a:c1:8d:29:b9:90:67:e4:6d:16:cc:07:f4:ff`.
+That immediately narrowed it down to the relevant TLS handshake packet. 
+From there, the **Info** column already shows that this is the server-side handshake packet containing **Server Hello**, **Certificate**, **Certificate Status**, and **Server Key Exchange**.
+So I just expanded **Server Key Exchange**, then **EC Diffie-Hellman Server Params**, and the value is shown directly under **Pubkey**. 
+That is the ephemeral public key requested by the question.
+
+<img width="2134" height="404" alt="immagine" src="https://github.com/user-attachments/assets/27a9da7f-828e-44fc-b0e0-68bc3e50c36e" />
+
+**Answer:** `04edcc123af7b13e90ce101a31c2f996f471a7c8f48a1b81d765085f54805`
+
+### Q8 - What is the first TLS 1.3 client random that was used to establish a connection with `protonmail.com`?
+
+For this question, I filtered with **`tls && frame contains "proton"`**, which was already enough to narrow the view down to the relevant **TLSv1.3 Client Hello** packets for **`protonmail.com`**. 
+From there, the packet details make it straightforward: under **Transport Layer Security**, inside the **Handshake Protocol: Client Hello** section, the value shown under **Random** is exactly what the question is asking for.
+So there was no need to overcomplicate it, since the answer is directly visible there.
+
+<img width="1522" height="528" alt="immagine" src="https://github.com/user-attachments/assets/03f21479-f99b-4a0c-869e-4c8782404a6a" />
+
+**Answer:** `24e92513b97a0348f733d16996929a79be21b0b1400cd7e2862a732ce7`
+
+### Q9 - Which country is the manufacturer of the FTP server’s MAC address registered in?
+
+I went back to the **`ftp`** filter, since that traffic already gave me the FTP server involved in the exchange. 
+I highlighted one of the early FTP packets, and in the **Ethernet II** section the **destination MAC address** is shown as **`08:00:27:a6:1f:86`**, which is the FTP server’s MAC in that packet. From there, I just used a MAC address lookup on that value. 
+The lookup result shows the vendor as **PCS Systemtechnik GmbH** and the registered country as **US**, so the answer is **United States**.
+
+<img width="756" height="273" alt="immagine" src="https://github.com/user-attachments/assets/97acce89-022f-417f-8261-a30bcbd7e57f" />
+<img width="941" height="1034" alt="immagine" src="https://github.com/user-attachments/assets/860de3bc-cb92-47fa-8797-b2d2f371fa3b" />
+
+**Answer:** `United States`
+
+### Q10 - What time was a non-standard folder created on the FTP server on the 20th of April?
+
+I first filtered on **`ftp.request.command == "LIST"`** to isolate only the moments where the client was asking for a directory listing. 
+That was useful because it immediately showed me the relevant **LIST** requests without having to scroll through all the other FTP control traffic.
+At that stage, though, doing **Follow TCP Stream** there still mainly showed the FTP control channel, so I was mostly seeing commands and server replies such as **`LIST`**, **`150 Here comes the directory listing`**, **`226 Directory send OK`**, and the surrounding FTP activity.
+
+<img width="1080" height="184" alt="immagine" src="https://github.com/user-attachments/assets/08402698-d31e-4f43-94aa-59120136bcac" />
+<img width="394" height="946" alt="immagine" src="https://github.com/user-attachments/assets/627380b2-99a9-4bb6-883b-0e83e962319f" />
+
+Once that picture was clear enough, I switched approach for convenience.
+Since the control channel was too noisy and I already had a good idea of what commands the attacker had executed, I moved to the actual data channel by filtering the **FTP-DATA** traffic related to the directory listings.
+In practice, I used the FTP-DATA side with the **LIST** traffic visible, which made the view much cleaner because at that point I was no longer looking at the command conversation itself, but at the transferred listing content. 
+From there, I simply picked the **first relevant FTP-DATA packet** and did **Follow TCP Stream** on it. 
+
+<img width="1352" height="253" alt="immagine" src="https://github.com/user-attachments/assets/a4dc1647-40d5-4e5a-b93f-6d52a0eaf06f" />
+<img width="495" height="193" alt="immagine" src="https://github.com/user-attachments/assets/1e19cf6b-db40-4251-997e-2b5337f7eb32" />
+
+Inside that stream, the unusual entry appears with the timestamp **`Apr 20 17:53`**, which is exactly the detail the question was asking for.
+So the answer comes from following the correct **FTP-DATA LIST** stream rather than staying on the FTP control packets, because the control side tells you that a listing happened, while the data side actually shows the listing content and therefore the folder name and its time.
+
+**Answer:** `17:53`
+
+### Q11 - What URL was visited by the user and connected to the IP address `104.21.89.171`?
+
+This one was possible mainly because the question was very specific. I filtered with **`ip.addr == 104.21.89.171 && http`**, which immediately reduced the view to the relevant HTTP exchange with that IP. 
+From there, the traffic was easy to read: the client sends a **`GET /`** request, and the server replies with **`HTTP/1.1 301 Moved Permanently`**.
+In the response details, the important part is the **`Location`** header, because that is where the visited URL is shown after the redirect.
+
+<img width="1322" height="414" alt="immagine" src="https://github.com/user-attachments/assets/5e1ea159-7f55-4b74-b5b9-f88829fe60cd" />
+
+**Answer:** `http://dfir.science/`
+
