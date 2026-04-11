@@ -1,119 +1,104 @@
-# XXE Infiltration PCAP Analysis (CyberDefenders)
-
-## Objective
-Analyze HTTP/XML and MySQL traffic in a PCAP to reconstruct an XXE attack chain against a web application, identify what the attacker accessed through XML external entity abuse, determine when the exposed database credentials were first used, and identify the later web shell activity.
+# XXE Infiltration - PCAP Analysis (CyberDefenders)
 
 ## Scenario
-The exercise is based on a PCAP containing suspicious HTTP/XML traffic associated with a suspected XXE injection attack against a web application.
-
-The goal is to reconstruct the attacker’s actions by identifying:
-- the highest-numbered open port exposed on the target host
-- the vulnerable PHP endpoint
-- the first malicious XML file uploaded
-- the web app configuration file read through XXE
-- the compromised database password
-- the first MySQL login timestamp after credential exposure
-- the uploaded web shell used for command execution and persistence
+An automated alert has detected unusual XML data being processed by the server, which suggests a potential XXE (XML External Entity) Injection attack. 
+This raises concerns about the integrity of the company's customer data and internal systems, prompting an immediate investigation.
+Analyze the provided PCAP file using the network analysis tools available to you. Your goal is to identify how the attacker gained access and what actions they took.
 
 ## References
-- CyberDefenders: XXE Infiltration Lab
-- Main activity types observed during analysis:
-  - HTTP/XML file upload abuse
-  - XXE-based local file read
-  - application configuration disclosure
-  - MySQL access after credential exposure
-  - web shell use through HTTP GET parameters
+- https://cyberdefenders.org/blueteam-ctf-challenges/xxe-infiltration/
 
-## Tools Used
-- Wireshark
-- Statistics → Conversations
-- HTTP/XML packet inspection
-- Display filters
-- Packet details pane
+> [!IMPORTANT]
+> The questions below are not in the original lab order. I arranged them in the order that best matched my investigation flow.
 
-## Investigation Workflow
-1. Reviewed the traffic at a high level and quickly recognized that the lab was mostly HTTP-centered, with XML uploads driving the compromise and only a later MySQL step.
-2. For the open-port question, used the fact that the target host was communicating on port 80 and 3306, then answered with the highest-numbered one instead of overthinking the "web server" wording.
-3. Isolated the XML-related attacker traffic and immediately found repeated `POST` requests to `/review/upload.php`, which made the vulnerable PHP endpoint easy to identify.
-4. For the first malicious XML file, used the fact that the upload requests were already in chronological order and simply took the first multipart `filename` value.
-5. For the configuration-file question, reduced the ambiguity by separating "generic sensitive file" from "file that belongs to the web app configuration", then relied on the payload clue that pointed to `config.php`.
-6. The database password did not require inference: it was directly visible in the exfiltrated configuration content.
-7. The MySQL question was the main friction point because the requested method was inflated compared to the actual task: after the credential exposure, the only thing that mattered was the first `mysql.login_request` that followed it.
-8. The web-shell question was straightforward once command execution appeared directly in the URI through requests to `/uploads/booking.php?cmd=...`.
+### Q2 - What's the complete URI of the PHP script vulnerable to XXE Injection?
 
-## Key Evidence
-- Open ports relevant to the target host during analysis:
-  - `80`
-  - `3306`
-- Highest-numbered open port:
-  - `3306`
-- Vulnerable PHP endpoint:
-  - `/review/upload.php`
-- First malicious XML file uploaded:
-  - `TheGreatGatsby.xml`
-- Web app configuration file read through XXE:
-  - `config.php`
-- Database password exposed in the payload:
-  - `Winter2024`
-- Timestamp used as the pivot for credential exposure during analysis:
-  - `2024-05-31 12:03:12`
-- First MySQL login after credential exposure:
-  - `2024-05-31 12:08:49 UTC`
-- Web shell identified from command-execution requests:
-  - `booking.php`
-- Clear command-execution evidence:
-  - `/uploads/booking.php?cmd=whoami`
-  - `/uploads/booking.php?cmd=uname%20-a`
+For the second question, I filtered on **`xml`**, and that already narrowed the traffic down enough to make the pattern obvious. 
+In the screenshot, the repeated **HTTP/XML POST** requests all go to **`/review/upload.php`**, so there was no need to overcomplicate it.
+Since the question was asking for the complete URI of the PHP script vulnerable to **XXE**, and the XML uploads were clearly being sent there, that was enough to identify **`/review/upload.php`** as the relevant script.
 
-## Findings
-- The lab was easy overall.
-- Most answers were visible almost directly once each question was stripped down to its actual technical meaning.
-- The main analytical effort was not packet complexity but wording cleanup.
-- The vulnerable-endpoint question was simple because XML traffic immediately narrowed the search space:
-  - Observed: repeated attacker `POST` requests carrying XML reached `/review/upload.php`
-  - Conclusion: that URI was the vulnerable PHP script
-- The first-malicious-file question did not need deep timeline work:
-  - Observed: the uploads were already visible in chronological order
-  - Conclusion: the first multipart `filename` was enough to answer it
-- The configuration-file question was badly phrased:
-  - Observed: "sensitive file" and "web app configuration file" could be conflated if read too fast
-  - Conclusion: the real task was to find the file belonging to the application’s configuration, not just any interesting file
-- The password question was trivial once the right payload had been opened:
-  - Observed: the password was plainly visible in the leaked configuration content
-  - Conclusion: this was extraction, not investigation
-- The MySQL question was the most irritating part of the lab:
-  - Observed: the real logic was only "find the first MySQL login after the credentials were exposed"
-  - Conclusion: the long explanation around it made a simple temporal correlation look more complex than it was
-- The web-shell question was also obvious:
-  - Observed: `booking.php` was called with a `cmd=` parameter and returned command-execution output
-  - Conclusion: no serious deduction was needed once those requests were visible
+<img width="1129" height="180" alt="immagine" src="https://github.com/user-attachments/assets/7974915a-dc7a-4072-a263-11262d1ee0ce" />
 
-## Result
-- Highest-Numbered Open Port: `3306`
-- Vulnerable PHP Script: `/review/upload.php`
-- First Malicious XML File: `TheGreatGatsby.xml`
-- Web App Configuration File: `config.php`
-- Compromised Database Password: `Winter2024`
-- First MySQL Login After Credential Exposure: `2024-05-31 12:08:49 UTC`
-- Uploaded Web Shell: `booking.php`
+**Answer:** `/review/upload.php`
 
-## Mistakes / Friction Points
-- The main weakness of the lab was question wording, not traffic complexity.
-- Some questions were more ambiguous than they needed to be:
-  - `highest-numbered port open on the victim's web server` could be misread as "web port" instead of "highest port on the same host"
-  - `web app configuration file` could be misread as "any sensitive file"
-- The MySQL question was the most inflated one:
-  - the actual work was just finding the first `mysql.login_request` after the leak
-  - the challenge explanation made that simple step sound more investigative than it really was
-- Because the lab is closed and the traffic is very direct, several answers could be reached almost immediately without broad reconstruction.
-- Overinvestigating some steps would have added noise rather than value.
+### Q3 - What's the name of the first malicious XML file uploaded by the attacker?
 
-## Notes
-- In a real investigation, stronger confirmation would still come from:
-  - web server logs
-  - application logs
-  - database logs
-  - host-side forensic evidence
-  - source code review of the vulnerable upload handler
-- In this lab, many answers were directly exposed in packet payloads, so the most useful mindset was to reduce each question to its core technical request and ignore the inflated narrative around it.
-- The most annoying part was not the exploit chain itself, but the mismatch between how simple some answers were and how overexplained some hints or writeups tried to make them look.
+I stayed on the **`xml`** traffic and opened one of the first upload requests to inspect it more closely. 
+In the packet details, under the **MIME Multipart Media Encapsulation** section, the filename is shown directly in the **`Content-Disposition`** line.
+The value highlighted there is **`TheGreatGatsby.xml`**, so that is the name of the first malicious XML file uploaded by the attacker.
+
+<img width="1111" height="327" alt="immagine" src="https://github.com/user-attachments/assets/bfe105d7-0c20-47b1-8e85-7fee7be10ead" />
+
+**Answer:** `TheGreatGatsby.xml`
+
+### Q4 - What's the name of the web app configuration file the attacker read?
+
+Still on the **`xml`** traffic, I opened the server response and in the XML section the injected entity is shown as **`SYSTEM "file:///var/www/html/config.php"`**. 
+So there was no real need to go further, because the name of the web application configuration file is already visible there as **`config.php`**.
+
+<img width="1179" height="466" alt="immagine" src="https://github.com/user-attachments/assets/7c099977-0e3f-4862-85ec-de77900af9ad" />
+
+**Answer:** `config.php`
+
+### Q5 - What is the password for the compromised database user?
+
+The same packet was also enough for this question.
+In the returned content shown above, the response includes the leaked configuration values, and among them you can directly read **`$db_pass = 'Winter2024';`**. 
+So the password for the compromised database user can be answered straight from that same response.
+
+**Answer:** `Winter2024`
+
+### Q7 - Can you identify the name of the web shell that the attacker uploaded for remote code execution and persistence?
+
+Switching back to the **`http`** filter and scrolling toward the end of the capture, below the earlier XML-related activity, the answer to **Q7** becomes fairly clear. 
+At that stage, the traffic shifts from the XXE upload activity to repeated requests against **`/uploads/booking.php`**, with command parameters such as **`cmd=whoami`**, **`cmd=uname -a`**, and even file reads like **`cat /etc/passwd`** and **`cat /etc/shadow`**. 
+That is already enough to show that this file is not just a normal uploaded PHP file, but the web shell the attacker is actively using for command execution. 
+So from that point, the relevant filename can be read directly as **`booking.php`**.
+
+<img width="1400" height="251" alt="immagine" src="https://github.com/user-attachments/assets/2fac0826-7e8f-448f-946d-58ebd2a2933e" />
+
+
+**Answer:** `booking.php`
+
+### Q6 - What is the timestamp of the attacker's initial connection to the MySQL server using the compromised credentials after the exposure?
+
+By filtering on **`ip.src == 210.106.114.183 && mysql`**, I isolated only the MySQL traffic originating from the attacker. 
+The remaining packets are all **MySQL Login Request** messages from **`210.106.114.183`** to **`50.239.151.185`**, which shows that the attacker was initiating authentication attempts against the victim’s MySQL server. 
+For the question about the attacker’s initial connection after the credential exposure, the relevant timestamp is the later one, **`2024-05-31 12:08:49.165156`**, since that is the first visible MySQL login request after the credentials had already been exposed.
+
+<img width="980" height="191" alt="immagine" src="https://github.com/user-attachments/assets/b794a524-d8f6-4c20-9ceb-7548e683a1d4" />
+
+> [!NOTE]
+> The database credentials should be considered exposed when they appear in the **server response**, not when the attacker first sends the malicious XML request.
+>  In this case, the relevant moment is the response where **`config.php`** is returned and the value **`$db_pass = 'Winter2024';`** becomes visible.
+> Only after that point does it make sense to identify the first MySQL connection made with the compromised credentials.
+
+**Answer:** `2024-05-31 12:08`
+
+### Q1 - Can you identify the highest-numbered port that is open on the victim's web server?
+
+I left this question for the end because, out of all the ones covered today, this was the one I found less immediate.
+
+To answer it, I did not try to guess the open ports from generic traffic. Instead, I focused on the part that actually matters during reconnaissance: the server’s replies to the attacker while the ports are being probed.
+
+I used this filter:
+
+`ip.src == 50.239.151.185 && ip.dst == 210.106.114.183 && tcp.flags.syn == 1 && tcp.flags.ack == 1`
+
+The idea behind it is simple. In TCP, when a client wants to start a connection, it normally begins with a **SYN** packet. **SYN** stands for synchronization, and it is basically the packet used to initiate the connection. If the destination port is open, the server answers with **SYN, ACK**. The **ACK** stands for acknowledgment, meaning the server is acknowledging the client’s request and agreeing to continue the TCP handshake. So, very roughly:
+
+* **SYN** = “I want to start a connection”
+* **SYN, ACK** = “I received that, and this port is open, let’s continue”
+
+That is why filtering for packets with both **SYN** and **ACK** is useful here: they are strong indicators that the attacker hit an open port on the victim server.
+
+With that filter applied, the screenshot becomes much easier to read.
+We are only seeing packets sent **from the victim server to the attacker**, and specifically only the ones that are **SYN, ACK** replies.
+At that point, the important value is the **source port** on the server side, because that is the port on the victim that is replying as open.
+
+<img width="1646" height="278" alt="immagine" src="https://github.com/user-attachments/assets/12d04efe-4444-46c3-9a78-c352a8864757" />
+
+In the screenshot, only two relevant server ports stand out clearly: **80** and **3306**. 
+Since the question asks for the **highest-numbered open port** discovered on the victim’s web server, I just compare those visible open ports and take the higher one.
+
+**Answer:** `3306`
