@@ -38,6 +38,7 @@ In other words, I did not rely on **Conversations** alone, but used it only to o
 ### Q2 - What is the name of the malicious file used for initial access?
 
 To answer this question, it is enough to look at the **filename** shown in the previous **Follow HTTP Stream** (screenshot above).
+<img width="547" height="207" alt="immagine" src="https://github.com/user-attachments/assets/0ff3a903-b686-4927-8b42-fb5ec46e1575" />
 
 **Answer:** `allegato_708.js`
 
@@ -58,6 +59,10 @@ That gave the final SHA-256 value directly.
 <img width="746" height="87" alt="immagine" src="https://github.com/user-attachments/assets/9a4a2267-8f91-4d05-9d52-8d14198713a3" />
 <img width="1065" height="317" alt="immagine" src="https://github.com/user-attachments/assets/237970d4-3956-40c2-91a0-182c6e53158c" />
 
+> [!NOTE]
+> In **Export Objects → HTTP**, the relevant object may appear under the requested path, such as **`login.php`**, rather than under the attachment filename shown in the HTTP response.
+> In this case, the malicious file delivered during the initial access was identified from the **`Content-Disposition`** header as **`allegato_708.js`**, but the exported object was still saved from the HTTP transaction associated with **`login.php`**.
+> So the hash was calculated on the downloaded malicious content itself, not on the requested path name.
 
 **Answer:** `847B4AD90B1DABA2D9117A8E05776F3F902DDA593FB1252289538ACF476C4268`
 
