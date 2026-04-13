@@ -16,8 +16,6 @@ I first went to **Statistics → Conversations** to get an initial sense of who 
 After that, I isolated the **HTTP** traffic and started looking at the requests that already looked a bit suspicious just from the **Info** column.
 One of them stood out immediately: a **`GET /login.php`** request to **`62.173.142.148`**.
 
-
-
 <img width="244" height="155" alt="immagine" src="https://github.com/user-attachments/assets/4442d06d-766e-477b-aa8a-b65ae029ee53" />
 
 From there I opened **Follow TCP Stream**, and that is where it became clearly abnormal.
@@ -37,7 +35,7 @@ In other words, I did not rely on **Conversations** alone, but used it only to o
 
 ### Q2 - What is the name of the malicious file used for initial access?
 
-To answer this question, it is enough to look at the **filename** shown in the previous **Follow HTTP Stream** (screenshot above).
+To answer this question, it is enough to look at the **filename** shown in the previous **Follow HTTP Stream**.
 <img width="547" height="207" alt="immagine" src="https://github.com/user-attachments/assets/0ff3a903-b686-4927-8b42-fb5ec46e1575" />
 
 **Answer:** `allegato_708.js`
