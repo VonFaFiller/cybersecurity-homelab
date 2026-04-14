@@ -167,5 +167,5 @@ From there I could separate the actual files from the later scheduled task logic
 
 <img width="1164" height="1250" alt="immagine" src="https://github.com/user-attachments/assets/53250439-b485-4a8e-954a-6b6bc997b8ef" />
 
-**Answer:** ``Conted.ps1`, `Conted.bat`, `Conted.vbs``
+**Answer:** ``Conted.ps1, Conted.bat, Conted.vbs``
 
