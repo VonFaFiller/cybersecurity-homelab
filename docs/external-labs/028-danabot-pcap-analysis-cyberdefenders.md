@@ -1,11 +1,9 @@
 # DanaBot – PCAP Analysis (CyberDefenders)
 
-
 ## Scenario
 The SOC team has detected suspicious activity in the network traffic, revealing that a machine has been compromised.
 Sensitive company information has been stolen.
 Your task is to use Network Capture (PCAP) files and Threat Intelligence to investigate the incident and determine how the breach occurred.
-
 
 ## References
 - https://cyberdefenders.org/blueteam-ctf-challenges/danabot/
@@ -85,7 +83,6 @@ The returned content is clearly not normal text or a web page: it begins with th
 So, between the requested filename **`resources.dll`** and the binary executable content shown in the stream, the file extension asked by the question is clearly **`.dll`**.
 
 <img width="1140" height="951" alt="immagine" src="https://github.com/user-attachments/assets/dcd53046-375b-447c-b041-3e2b5b73f1ba" />
-
 
 **Answer:** `.dll`
 
