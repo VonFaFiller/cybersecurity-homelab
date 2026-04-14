@@ -1,4 +1,4 @@
-# XLMRat – PCAP Analysis (CyberDefenders)
+ # XLMRat – PCAP Analysis (CyberDefenders)
 
 ## Scenario
 A compromised machine has been flagged due to suspicious network traffic. 
@@ -14,8 +14,8 @@ First I went to Conversations just to get a feel for the IPs in the dataset.
 
 <img width="241" height="94" alt="immagine" src="https://github.com/user-attachments/assets/68f02a7e-f914-429c-9725-4bd5d71936eb" />
 
-Then I filtered for HTTP since the dataset was small. F
-rom there I followed the HTTP stream for both GET requests. 
+Then I filtered for HTTP since the dataset was small. 
+From there I followed the HTTP stream for both GET requests. 
 A quick look was enough to see they were not normal requests and were clearly part of the malicious activity, which was something to dig into more in the next questions.
 
 <img width="1411" height="181" alt="immagine" src="https://github.com/user-attachments/assets/fb7e2e1f-5f27-43e1-9802-c7a3b4d901e1" />
@@ -37,7 +37,7 @@ It came back as **ReliableSite.Net LLC**.
 
 <img width="648" height="206" alt="immagine" src="https://github.com/user-attachments/assets/ab583e08-fbb4-4929-84ae-8d3abdbc9f04" />
 
-**Answer:** `ReliableSite.Net `
+**Answer:** `ReliableSite.Net`
 
 ### Q3 - By analyzing the malicious scripts, two payloads were identified: a loader and a secondary executable. What is the SHA256 of the malware executable?
 
@@ -46,8 +46,8 @@ I had already checked the content enough to know it contained the malicious scri
 
 <img width="421" height="126" alt="immagine" src="https://github.com/user-attachments/assets/5b5bd70e-e1dd-46a4-b3c2-406d96b864a0" />
 
-Then I worked from the assumption that `$pe` was the loader and `$NKbb` was the secondary executable. 
-The variable names alone were not enough, but they were a decent starting lead. 
+Then I worked from the assumption that `$pe` was the loader and `$NKbb` was the secondary executable.
+The variable names alone were not enough, but they were a decent starting lead.
 What made it hold up was the execution flow later: `$pe` gets loaded as a .NET assembly, then its `Execute` method is called and `$NKbb` is passed into it together with `RegSvcs.exe`.
 That is why I treated `$NKbb` as the actual malware payload to hash.
 
@@ -55,38 +55,46 @@ That is why I treated `$NKbb` as the actual malware payload to hash.
 
 Then I loaded the exported file into PowerShell from the Desktop:
 
-```powershell
-$hexString_bbb = [regex]::Match($content, '(?s)\$hexString_bbb\s*=\s*["'']([^"'']+)["'']').Groups[1].Value
+```powershell id="jwws8h"
+$content = Get-Content .\mdm.jpg -Raw
 ```
 
 This was just to load the whole exported object into a variable as raw text, because I needed to search inside the script content instead of reading it line by line.
 
 Next I pulled out the value of `$hexString_bbb` with a regex.
+
+```powershell id="lhdt5a"
+$hexString_bbb = [regex]::Match($content, '(?s)\$hexString_bbb\s*=\s*["'']([^"'']+)["'']').Groups[1].Value
+```
+
 The point was to extract the long hex blob directly from the script without manually copying thousands of characters.
 
-```powershell
+```powershell id="kxcv5t"
 $hexString_bbb.Length
 ```
 
-This was just a sanity check. It returned `199679`, so I knew the extraction had actually worked and I was not dealing with an empty or broken match.
+This was just a sanity check.
+It returned `199679`, so I knew the extraction had actually worked and I was not dealing with an empty or broken match.
 
-```powershell
+```powershell id="tf84tl"
 [Byte[]]$NKbb = $hexString_bbb -split '_' | ForEach-Object { [byte]([Convert]::ToInt32($_,16)) }
 ```
 
-This is the key step. `$hexString_bbb` was not the executable yet, just a long text string of hex values separated by underscores. So I split it on `_`, converted each hex chunk into a real byte, and rebuilt the payload as a byte array in memory.
+This is the key step.
+`$hexString_bbb` was not the executable yet, just a long text string of hex values separated by underscores.
+So I split it on `_`, converted each hex chunk into a real byte, and rebuilt the payload as a byte array in memory.
 
-```powershell
+```powershell id="6dv7q0"
 [IO.File]::WriteAllBytes(".\NKbb.bin", $NKbb)
 ```
-
 This was meant to save the reconstructed byte array as an actual binary file so I could hash the real payload, not the text representation.
 
 > [!CAUTION]
 > The next steps can be skipped, because in the following questions I found a more efficient way to recover the same kind of information.
 > Still, I want to keep this older method here because, even if it was clearly less efficient, it was still a useful and fairly interesting learning path.
 
-```powershell
+
+```powershell id="ij0vca"
 (Get-FileHash ".\NKbb.bin" -Algorithm SHA256).Hash
 ```
 
@@ -94,27 +102,26 @@ That should have given me the SHA256 immediately, but this is where I hit the pa
 
 The error was:
 
-```text
+```text id="zev2ls"
 Cannot find path 'C:\Users\Administrator\Desktop\NKbb.bin' because it does not exist.
 ```
 
-So the problem was not with the extraction logic itself, but with the file path handling on the first write attempt. I had used a relative path (`.\NKbb.bin`), and then `Get-FileHash` could not find the file where PowerShell was resolving it. I also checked whether it had ended up in `C:\Windows\System32\NKbb.bin`, but that came back `False`, so I stopped guessing and just forced a full absolute path.
+So the problem was not with the extraction logic itself, but with the file path handling on the first write attempt.
+I had used a relative path (`.\NKbb.bin`), and then `Get-FileHash` could not find the file where PowerShell was resolving it.
+I also checked whether it had ended up in `C:\Windows\System32\NKbb.bin`, but that came back `False`, so I stopped guessing and just forced a full absolute path.
 
-```powershell
+```powershell id="cwuy8v"
 Test-Path C:\Windows\System32\NKbb.bin
 ```
 
-That check was only there to see whether the file had been written somewhere else because of the relative path ambiguity. It was not there.
+That check was only there to see whether the file had been written somewhere else because of the relative path ambiguity.
+It was not there.
 
 So I redid the write with an explicit full path:
 
-```powershell
+```powershell id="2f9o1q"
 [IO.File]::WriteAllBytes("C:\Users\Administrator\Desktop\NKbb.bin", $NKbb)
 (Get-FileHash "C:\Users\Administrator\Desktop\NKbb.bin" -Algorithm SHA256).Hash
-```
-
-```powershell
-$content = Get-Content .\mdm.jpg -Raw
 ```
 
 <img width="1894" height="538" alt="immagine" src="https://github.com/user-attachments/assets/2e918e41-85c0-4066-ad78-26172e679fe1" />
