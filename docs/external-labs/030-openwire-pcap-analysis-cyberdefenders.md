@@ -121,6 +121,5 @@ I first checked the official Apache update on **CVE-2023-46604** to confirm the 
 So I looked at patch-oriented references and the code itself.
 Those sources point to the validation being added in `BaseDataStreamMarshaller.createThrowable`, where the patch inserts a check to make sure only valid `Throwable` classes can be instantiated. ([uptycs.com][2])
 
-In simple terms, they put the check exactly at the point where the dangerous class creation was happening, so only valid `Throwable` classes are allowed and arbitrary classes are blocked. ([GitHub][2])
-
+In simple terms, they put the check exactly at the point where the dangerous class creation was happening, so only valid `Throwable` classes are allowed and arbitrary classes are blocked.
 **Answer:** `BaseDataStreamMarshaller.createThrowable`
