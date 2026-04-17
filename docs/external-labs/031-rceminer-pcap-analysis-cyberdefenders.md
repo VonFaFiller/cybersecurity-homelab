@@ -1,4 +1,4 @@
-<img width="685" height="249" alt="immagine" src="https://github.com/user-attachments/assets/c1ccc3ad-a976-4f2a-8d15-bc703f59e20f" /># RCEMiner – PCAP Analysis (CyberDefenders)
+# RCEMiner – PCAP Analysis (CyberDefenders)
 
 ## Scenario
 Over the past 24 hours, the IT department has noticed a drastic increase in CPU and memory usage on several publicly accessible servers.
