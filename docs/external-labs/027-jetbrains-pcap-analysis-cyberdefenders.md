@@ -100,11 +100,6 @@ The same stream also made this question easy to answer, because the uploaded fil
 
 ### Q3 - After identifying the version of our web server service, what CVE number corresponds to the vulnerability the attacker exploited?
 
-> [!CAUTION]
-> Some of the following questions rely on background knowledge that this lab does not seem designed to develop in depth.
-> That is not necessarily a flaw in the lab itself, but rather a limit of its scope.
-> In practice, searching the observed details online can quickly lead to public solutions, which reduces the learning value of that specific part of the exercise.
-
 I saw that the version was 2023.11.3, and I also saw that the attacker was able to perform unauthorized actions and create a new admin account.
 I then searched those details on Google, and the answer appeared almost immediately. 
 
