@@ -1,0 +1,6 @@
+{
+  "markdown.editor.filePaste.enabled": true,
+  "markdown.copyFiles.destination": {
+    "/docs/external-labs/**/*.md": "screenshots/${documentBaseName}-${fileName}"
+  }
+}

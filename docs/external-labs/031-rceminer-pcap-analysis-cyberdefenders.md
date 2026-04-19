@@ -167,8 +167,47 @@ That pattern is strongly associated with **ThinkPHP**.
 
 ### Q8 - Knowing the destination of the data being exfiltrated or reported by the malware helps in tracing the attacker and blocking further communications to malicious servers. The compromised server was used to report system performance metrics back to the attacker. What is the IP address and port number to which this data was sent?
 
-**Answer:** ``
+I searched for the reporting traffic more directly with:
+```text
+ip.src == 36.96.48.3 && tcp && frame contains "CPU"
+```
+That worked better than looking only at HTTP, because this traffic was not just a normal web POST anymore.
+The filter immediately showed repeated TCP packets from the compromised server to `218.244.58.70`, and the payload contained CPU-related status data, so it matched what the question was asking about: system performance metrics being reported out.
+
+![alt text](screenshots/031-rceminer-pcap-analysis-cyberdefenders-image-1.png)
+
+Then I followed the TCP stream to confirm the content.
+The stream showed repeated performance/status entries, including CPU state information, so I treated that connection as the reporting channel.
+
+In the packet list, the Info column shows the connection as:
+```text
+49965 → 9011
+```
+`49965` is the temporary source port from the compromised server.
+The actual destination port is `9011`.
+
+
+![alt text](screenshots/031-rceminer-pcap-analysis-cyberdefenders-image-2.png)
+
+
+**Answer:** `218.244.58.70:9011`
 
 ### Q9 - Identifying the specific cryptomining software used by the attacker allows for better detection and removal of similar threats in the future. The malware deployed specific software to utilize the compromised server's resources for cryptomining. What mining software and version was used?
 
-**Answer:** ``
+I filtered directly on:
+```text
+frame contains "agent"
+```
+because mining clients often identify themselves in the Stratum login message with an `agent` field.
+That immediately led to the relevant TCP stream, where the JSON login request was visible in clear text.
+
+![alt text](screenshots/031-rceminer-pcap-analysis-cyberdefenders-image-3.png)
+
+Inside the stream, the `agent` value was:
+```text
+XMRig/5.5.0
+```
+
+![alt text](screenshots/031-rceminer-pcap-analysis-cyberdefenders-image.png)
+
+**Answer:** `XMRig/5.5.0`
