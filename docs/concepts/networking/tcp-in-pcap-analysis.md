@@ -82,10 +82,6 @@ Useful to spot packet loss, delay, congestion, or unstable communication.
 tcp.analysis.lost_segment
 ```
 
-Shows packets that Wireshark marks as TCP retransmissions.
-
-Useful to spot packet loss, delay, congestion, or unstable communication.
-
 ```text
 tcp.analysis.flags
 ```
