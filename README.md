@@ -1,165 +1,148 @@
-# Defensive Cybersecurity Home Lab (WIP)
+# Defensive Cybersecurity Home Lab & PCAP Analysis
 
 ## Overview
-This repository documents the build and development of a personal **defensive cybersecurity home lab** created for **hands-on learning**, **technical experimentation**, and **progressive blue team practice**.
 
-The primary purpose of this project is practical study through direct interaction with systems, networks, logs, and defensive tooling.  
-A secondary purpose is to maintain clear technical documentation that can also serve as evidence of skill development over time.
+This repository documents my practical cybersecurity learning path, focused on defensive investigation, PCAP analysis, Windows/Linux lab exercises, and progressive blue team methodology.
 
-This repository reflects the **actual implementation state** of the lab and does not present unfinished components as completed.
+The goal is to build evidence of practical skills through documented investigations, not just notes or theoretical summaries.
 
-## Learning Focus
-This lab is being developed to support practical learning in:
+The repository includes:
 
-- Linux system administration
-- Windows system fundamentals
-- virtualization
-- basic networking
-- system and network visibility
-- log analysis
-- troubleshooting
-- defensive investigation workflows
+- external PCAP analysis labs
+- internal Windows and Linux lab exercises
+- packet analysis workflows
+- defensive investigation notes
+- concepts studied when they became relevant during analysis
+- future Security Onion and monitoring work
 
-## Current Status
-### Completed
-- VMware environment prepared
-- Ubuntu virtual machine installed
-- Windows virtual machine installed
+## Main Focus
 
-### In Progress / Planned
-- Ubuntu baseline configuration and basic administration practice
-- Security Onion Standalone deployment
-- Virtual network design and validation
-- Initial logging, telemetry, and analysis exercises
+The current focus is practical defensive analysis, especially:
 
-## Current Study Strategy
-The lab is being built in stages.
+- PCAP triage
+- Wireshark investigation
+- attacker activity reconstruction
+- network protocol interpretation
+- Windows artifact analysis
+- Linux and Windows lab testing
+- basic detection and investigation methodology
 
-### Stage 1 — Foundations
-The initial phase focuses on:
-- Ubuntu VM
-- Windows VM
-- VMware networking
-- users, groups, permissions, services, processes, and logs
-- repeatable exercises using snapshots and reversible changes
+## Repository Structure
 
-This stage is intended to build operational familiarity before introducing the central monitoring platform.
+```text
+docs/
+  labs/
+    external/
+      malware-analysis/
+      pcap-analysis/
+    internal/
+      windows/
+      linux/
+      analysis/
 
-### Stage 2 — Central Visibility
-After the foundation phase, the lab will expand to include:
-- Security Onion Standalone
-- Windows host as a realistic endpoint
-- Ubuntu VM as a lightweight auxiliary system used when needed
+  concepts/
+    networking/
+    protocols/
+    endpoint/
+    malware-traffic/
+````
 
-At this stage, the lab will support both:
-- **host visibility**
-- **network visibility**
+## External Labs
 
-### Stage 3 — Controlled and Realistic Observation
-The environment will then be used in multiple ways depending on the exercise:
+External labs are used to practice investigation on prepared datasets, mainly PCAP-based challenges.
 
-- **Ubuntu VM + Windows VM**
-- **Security Onion + Windows host**
-- **Security Onion + Ubuntu VM**
-- **Security Onion + Windows host + Ubuntu VM**
-- **Security Onion + Windows VM** for more controlled and reversible testing
+These write-ups document:
 
-The Windows VM is intended to remain a **sandbox system**, not the primary endpoint.
+* initial triage
+* traffic filtering
+* protocol inspection
+* attacker and victim identification
+* payload or command reconstruction
+* reasoning process
+* lab limitations when the scenario is unrealistic or overly guided
 
-## Planned Architecture
+The purpose is not only to recover answers, but to document how the investigation was approached.
 
-### Host System
-- Host OS: Windows 11 Pro
-- CPU: AMD Ryzen 7 7800X3D
-- Memory: 32 GB RAM
-- Storage: 1.8 TB NVMe SSD
-- Hypervisor: VMware Workstation
+## Internal Labs
 
-### Virtual Machines
-- **Ubuntu VM**
-  - currently installed
-  - used for Linux administration, services, networking, and controlled test traffic
+Internal labs are controlled exercises built in my own environment.
 
-- **Windows VM**
-  - currently installed
-  - used as a reversible sandbox for controlled Windows exercises
+They are used to test and observe specific behaviors such as:
 
-- **Security Onion Standalone**
-  - planned
-  - used as the main monitoring and analysis platform
+* Windows user creation
+* scheduled tasks
+* authentication events
+* service state changes
+* batch execution
+* Linux permissions
+* SSH activity
+* HTTP and network behavior
 
-## Design Rationale
-This lab is intentionally structured around two different goals:
+These exercises are intentionally simple at first, because they are used to understand what specific actions produce at the system, log, and network level.
 
-1. **controlled experimentation**
-   - performed mainly in virtual machines
-   - suitable for repeatable exercises, snapshots, and rollback
+## Concepts
 
-2. **realistic observation**
-   - performed using the actual Windows host as an endpoint
-   - useful for observing real telemetry, background noise, and normal system activity
+The `concepts/` section is not a generic theory dump.
 
-This distinction is central to the project:
-- **VMs** are used for controlled learning and safe experimentation
-- the **Windows host** is used for realistic endpoint visibility
-- **Security Onion Standalone** is used as the central analysis platform
+It contains technical concepts studied because they appeared during labs or investigations.
 
-## Practical Constraints
-This lab is being designed around a single host system with **32 GB RAM**.
+Examples:
 
-Because of that, the project is structured to avoid treating all components as permanently active at the same time. VM resources (CPU and RAM) are dynamically reallocated depending on the active lab components, with Security Onion Standalone expected to require the majority of available resources. Ubuntu and Windows VM usage will be scaled accordingly based on the current exercise.
+* TCP connection behavior in PCAP analysis
+* DNS resolution during traffic reconstruction
+* HTTP requests, POSTs, uploads, and webshell behavior
+* TLS metadata and encrypted traffic analysis
+* SMB and Windows lateral movement basics
+* IP addressing, NAT, and traffic scope
 
-## Planned Use Cases
-The lab is intended to support exercises such as:
+Each concept should explain:
 
-- basic Linux and Windows administration
-- service creation, modification, and observation
-- process and connection analysis
-- firewall and network visibility checks
-- host-to-host communication testing
-- log collection and review
-- controlled generation of observable system events
-- defensive monitoring and introductory investigation workflows
+* why I studied it
+* what the core idea is
+* what it looks like during analysis
+* how it helps avoid wrong conclusions
+
+## Tools Used
+
+* Wireshark
+* VMware Workstation
+* Windows
+* Ubuntu
+* PowerShell
+* Linux shell
+* CyberDefenders labs
+* Security Onion planned for later monitoring work
 
 ## Documentation Standard
-This repository is intended to track the real build process, including:
 
-- setup steps
-- configuration choices
-- VM resource allocation
-- networking decisions
-- technical issues encountered
-- troubleshooting steps
-- fixes applied
-- screenshots
-- lessons learned
-- future improvements
+For lab write-ups, the goal is to preserve the actual reasoning process rather than producing a polished report that hides how the answer was reached.
 
-The documentation is meant to show actual progression, including incomplete phases and implementation constraints.
+## Current Status
 
-## Planned Repository Structure
-```text
-- README.md
-docs/
-  analysis/
-  ubuntu/
-  windows/
-```
-## Documentation Approach
-Each technical note or setup document should aim to include:
+Completed / active:
 
-- Objective
-- Why this matters
-- Observations
-- Result
-- Notes (if needed)
-- Issues Encountered (if needed)
-- Resolution (if needed)
+* PCAP analysis write-ups
+* CyberDefenders external labs
+* Windows internal lab tests
+* Ubuntu internal lab tests
+* basic investigation documentation
+
+Planned:
+
+* Security Onion deployment
+* more realistic internal traffic generation
+* malware traffic analysis
+* endpoint and network visibility correlation
+* reusable investigation methodology
 
 ## AI Usage Disclosure
-For transparency: AI was used only to assist with the wording, grammar, formatting, and structure of this documentation.
 
-The technical setup, installation work, configuration, troubleshooting, analysis, design decisions, and project progression are my own.
+AI may be used to assist with wording, grammar, formatting, and structure.
+
+The technical analysis, lab work, investigation process, troubleshooting, conclusions, and documentation decisions are my own.
 
 ## Disclaimer
-This project is built strictly for educational purposes in an isolated personal lab environment.
+
+This repository is for educational and defensive cybersecurity learning only.
+
+All internal exercises are performed in a controlled personal lab environment.
