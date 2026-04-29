@@ -1,4 +1,3 @@
-````markdown id="quic-page-001"
 # QUIC Behavior in PCAP Analysis
 
 ## Practical Use in PCAP Analysis
@@ -218,4 +217,4 @@ http3
 Shows HTTP/3 traffic when Wireshark decodes it.
 
 Useful to identify web traffic carried over QUIC.
-````
+
