@@ -93,11 +93,7 @@ Rispetto ai satelliti geostazionari, hanno ritardi più bassi perché orbitano p
 
 ## Accesso tramite rete locale
 
-In case, aziende e università, i dispositivi spesso si collegano prima a una rete locale.
-
-Esempi:
-
-* Ethernet, Wi-Fi
+In case, aziende e università, i dispositivi spesso si collegano prima a una rete locale:
 
 ### Ethernet
 
@@ -145,9 +141,6 @@ Queste reti permettono di usare Internet anche in movimento.
 I dati devono sempre viaggiare attraverso un mezzo di trasmissione.
 
 I mezzi di trasmissione si dividono in due categorie principali:
-
-* mezzi guidati
-* mezzi non guidati
 
 ### Mezzi guidati (Guided Media)
 
