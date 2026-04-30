@@ -1,8 +1,7 @@
 {
   "markdown.editor.filePaste.enabled": true,
   "markdown.copyFiles.destination": {
-    "docs/labs/external-labs/pcap-analysis/**/*.md": "screenshots/${documentBaseName}-${fileName}",
-    "docs/labs/external-labs/malware-analysis/**/*.md": "screenshots/${documentBaseName}-${fileName}"
+    "/**/*.md": "screenshots/${documentBaseName}-${fileName}"
   }
   
 }
