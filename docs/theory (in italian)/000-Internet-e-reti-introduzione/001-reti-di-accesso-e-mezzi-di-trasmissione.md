@@ -16,11 +16,7 @@ Esempi:
 
 ## Accesso domestico a Internet
 
-Le connessioni domestiche possono usare tecnologie diverse.
-
-Esempi:
-
-* DSL, Internet via cavo, FTTH, fixed wireless, satelliti LEO
+Le connessioni domestiche possono usare tecnologie diverse:
 
 ### DSL (Digital Subscriber Line)
 
@@ -33,6 +29,13 @@ In casa, un modem DSL gestisce il collegamento con la rete dell’operatore.
 Dal lato dell’operatore, il traffico viene raccolto da apparati dedicati e poi inoltrato verso Internet.
 
 La DSL è spesso **asimmetrica**, cioè la velocità in download e quella in upload non sono uguali.
+
+
+<a href="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-9.png">
+  <img src="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-9.png" alt="schema-DSL" width="600">
+</a>
+
+
 
 ### Internet via cavo / HFC (Hybrid Fiber-Coaxial)
 
@@ -59,6 +62,10 @@ In questo caso, la fibra ottica arriva direttamente fino all’abitazione.
 
 È una delle soluzioni più veloci per l’accesso domestico, perché usa la fibra per gran parte, o per tutto, il percorso fino all’utente.
 
+<a href="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-7.png">
+  <img src="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-7.png" alt="schema-FTTH" width="600">
+</a>
+
 ### Accesso wireless fisso / FWI (Fixed Wireless Internet)
 
 L’accesso wireless fisso collega un’abitazione usando un collegamento radio tra una stazione dell’operatore e un modem in casa.
@@ -79,6 +86,10 @@ I satelliti LEO permettono l’accesso a Internet tramite satelliti in orbita ba
 Sono utili soprattutto in zone rurali, isolate o difficili da raggiungere con cavi terrestri.
 
 Rispetto ai satelliti geostazionari, hanno ritardi più bassi perché orbitano più vicino alla Terra.
+
+<a href="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-8.png">
+  <img src="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-8.png" alt="schema-LEO" width="600">
+</a>
 
 ## Accesso tramite rete locale
 
@@ -124,12 +135,10 @@ Esempi:
 
 Queste reti permettono di usare Internet anche in movimento.
 
-
-<a href="">
-  <img src="" alt="" width="600">
+<a href="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-6.png">
+  <img src="screenshots/001-reti-di-accesso-e-mezzi-di-trasmissione-image-6.png" alt="schema-mobile" width="600">
 </a>
-![alt text](image.png)
-![alt text](image.png)
+
 
 ## Mezzi di trasmissione
 
@@ -158,7 +167,7 @@ Esempi:
 
 ## Principali mezzi di trasmissione
 
-### Doppino in rame (Twisted-Pair Copper Wire)
+### 1 - Doppino in rame (Twisted-Pair Copper Wire)
 
 Il doppino in rame è formato da coppie di fili di rame intrecciati.
 
@@ -166,13 +175,13 @@ Il doppino in rame è formato da coppie di fili di rame intrecciati.
 
 L’intreccio dei fili aiuta a ridurre le interferenze elettriche.
 
-### Cavo coassiale (Coaxial Cable)
+### 2 - Cavo coassiale (Coaxial Cable)
 
 Il cavo coassiale è usato soprattutto nelle reti televisive via cavo e in alcune forme di accesso Internet domestico.
 
 Può trasportare segnali su frequenze diverse e supportare velocità elevate.
 
-### Fibra ottica (Optical Fiber)
+### 3 - Fibra ottica (Optical Fiber)
 
 La fibra ottica trasporta impulsi luminosi.
 
@@ -180,7 +189,7 @@ La fibra ottica trasporta impulsi luminosi.
 
 È molto usata nelle dorsali di rete, nei collegamenti tra grandi reti e nelle connessioni FTTH.
 
-### Canali radio terrestri (Terrestrial Radio Channels)
+### 4 - Canali radio terrestri (Terrestrial Radio Channels)
 
 I canali radio terrestri permettono comunicazioni senza fili tramite onde radio.
 
@@ -188,7 +197,7 @@ Sono usati in Wi-Fi, reti mobili, fixed wireless e altri sistemi radio.
 
 Le prestazioni dipendono da distanza, ostacoli, interferenze e qualità del segnale.
 
-### Canali radio satellitari (Satellite Radio Channels)
+### 5 - Canali radio satellitari (Satellite Radio Channels)
 
 I canali radio satellitari usano satelliti per collegare dispositivi o reti sulla Terra.
 
