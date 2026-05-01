@@ -1,4 +1,4 @@
-# Oski - PCAP Analysis (CyberDefenders)
+# Oski - Threat Intel (CyberDefenders)
 
 ## Scenario
 The accountant at the company received an email titled "Urgent New Order" from a client late in the afternoon.
