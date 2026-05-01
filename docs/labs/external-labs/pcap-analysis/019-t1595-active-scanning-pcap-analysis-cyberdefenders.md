@@ -142,11 +142,11 @@ From there, I opened `Active Scanning`, then the `Vulnerability Scanning` sub-te
 
 <img width="224" height="516" alt="immagine" src="https://github.com/user-attachments/assets/c3416448-073d-4de2-8a96-36f4ffd41bd4" />
 
-<img width="1872" height="694" alt="immagine" src="https://github.com/user-attachments/assets/cfc9cf26-0597-4857-b9d6-d15f36807565" />
+<img width="1000" alt="immagine" src="https://github.com/user-attachments/assets/cfc9cf26-0597-4857-b9d6-d15f36807565" />
 
-<img width="1258" height="513" alt="immagine" src="https://github.com/user-attachments/assets/8539a991-9adf-458b-8263-77ee9c6af9eb" />
+<img width="700" alt="immagine" src="https://github.com/user-attachments/assets/8539a991-9adf-458b-8263-77ee9c6af9eb" />
 
-<img width="1260" height="498" alt="immagine" src="https://github.com/user-attachments/assets/264ec5fa-a59b-4385-bfc0-4eba5b918ba6" />
+<img width="700" alt="immagine" src="https://github.com/user-attachments/assets/264ec5fa-a59b-4385-bfc0-4eba5b918ba6" />
 
 In the `Procedure Examples` section, `APT28` was explicitly listed. 
 Given my limited experience with this kind of MITRE correlation, I used it as a quick confirmation step and did not go much further than that.
