@@ -111,7 +111,8 @@ I highlighted one of the early FTP packets, and in the **Ethernet II** section t
 The lookup result shows the vendor as **PCS Systemtechnik GmbH** and the registered country as **US**, so the answer is **United States**.
 
 <img width="756" height="273" alt="immagine" src="https://github.com/user-attachments/assets/97acce89-022f-417f-8261-a30bcbd7e57f" />
-<img width="941" height="1034" alt="immagine" src="https://github.com/user-attachments/assets/860de3bc-cb92-47fa-8797-b2d2f371fa3b" />
+
+<img width="700" alt="immagine" src="https://github.com/user-attachments/assets/860de3bc-cb92-47fa-8797-b2d2f371fa3b" />
 
 **Answer:** `United States`
 
@@ -122,6 +123,7 @@ That was useful because it immediately showed me the relevant **LIST** requests 
 At that stage, though, doing **Follow TCP Stream** there still mainly showed the FTP control channel, so I was mostly seeing commands and server replies such as **`LIST`**, **`150 Here comes the directory listing`**, **`226 Directory send OK`**, and the surrounding FTP activity.
 
 <img width="1080" height="184" alt="immagine" src="https://github.com/user-attachments/assets/08402698-d31e-4f43-94aa-59120136bcac" />
+
 <img width="394" height="946" alt="immagine" src="https://github.com/user-attachments/assets/627380b2-99a9-4bb6-883b-0e83e962319f" />
 
 Once that picture was clear enough, I switched approach for convenience.
@@ -130,6 +132,7 @@ In practice, I used the FTP-DATA side with the **LIST** traffic visible, which m
 From there, I simply picked the **first relevant FTP-DATA packet** and did **Follow TCP Stream** on it. 
 
 <img width="1352" height="253" alt="immagine" src="https://github.com/user-attachments/assets/a4dc1647-40d5-4e5a-b93f-6d52a0eaf06f" />
+
 <img width="495" height="193" alt="immagine" src="https://github.com/user-attachments/assets/1e19cf6b-db40-4251-997e-2b5337f7eb32" />
 
 Inside that stream, the unusual entry appears with the timestamp **`Apr 20 17:53`**, which is exactly the detail the question was asking for.
