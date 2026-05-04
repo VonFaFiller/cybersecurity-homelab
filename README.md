@@ -1,139 +1,135 @@
-# Defensive Cybersecurity Home Lab & PCAP Analysis
+# Cybersecurity Homelab
 
-## Overview
+Practical cybersecurity documentation focused on defensive analysis, network traffic investigation, malware triage, threat intelligence, and controlled lab testing.
 
-This repository documents my practical cybersecurity learning path, focused on defensive investigation, PCAP analysis, Windows/Linux lab exercises, and progressive blue team methodology.
+The goal of this repository is to show how I approach investigations: what I check first, which artifacts I use, how I confirm or reject assumptions, and how I document the reasoning behind each answer.
 
-The goal is to build evidence of practical skills through documented investigations, not just notes or theoretical summaries.
+## Focus Areas
 
-The repository includes:
-
-- external PCAP analysis labs
-- internal Windows and Linux lab exercises
-- packet analysis workflows
-- defensive investigation notes
-- concepts studied when they became relevant during analysis
-- future Security Onion and monitoring work
-
-## Main Focus
-
-The current focus is practical defensive analysis, especially:
-
-- PCAP triage
-- Wireshark investigation
-- attacker activity reconstruction
-- network protocol interpretation
-- Windows artifact analysis
-- Linux and Windows lab testing
-- basic detection and investigation methodology
+- PCAP analysis and Wireshark-based investigation
+- Malware analysis and malware traffic interpretation
+- Threat intelligence and IOC pivoting
+- Windows and Linux lab testing
+- Network protocol notes for practical analysis
+- Defensive methodology and evidence-based reconstruction
 
 ## Repository Structure
 
 ```text
 docs/
   labs/
-    external/
-      malware-analysis/
+    external-labs/
       pcap-analysis/
-    internal/
+      malware-analysis/
+      threat-intel/
+
+    internal-labs/
       windows/
-      linux/
+      ubuntu/
       analysis/
 
   concepts/
     networking/
-    protocols/
-    endpoint/
-    malware-traffic/
 ````
 
 ## External Labs
 
-External labs are used to practice investigation on prepared datasets, mainly PCAP-based challenges.
+External labs are used to practice investigation on prepared datasets, mainly from CyberDefenders.
 
-These write-ups document:
+The write-ups focus on the reasoning process, not only on the final answer.
 
-* initial triage
-* traffic filtering
-* protocol inspection
-* attacker and victim identification
-* payload or command reconstruction
-* reasoning process
-* lab limitations when the scenario is unrealistic or overly guided
+Typical workflow:
 
-The purpose is not only to recover answers, but to document how the investigation was approached.
+```text
+initial triage
+→ relevant artifacts
+→ filters / pivots
+→ suspicious behavior
+→ confirmation
+→ answer
+```
+
+Main lab categories:
+
+* `pcap-analysis/` — network traffic reconstruction, protocol analysis, attacker/victim identification
+* `malware-analysis/` — malware behavior, dropped files, payloads, execution chains
+* `threat-intel/` — hash pivoting, VirusTotal, ANY.RUN, registrars, C2s, threat actor attribution
 
 ## Internal Labs
 
-Internal labs are controlled exercises built in my own environment.
+Internal labs are controlled tests built in my own environment.
 
-They are used to test and observe specific behaviors such as:
-
-* Windows user creation
-* scheduled tasks
-* authentication events
-* service state changes
-* batch execution
-* Linux permissions
-* SSH activity
-* HTTP and network behavior
-
-These exercises are intentionally simple at first, because they are used to understand what specific actions produce at the system, log, and network level.
-
-## Concepts
-
-The `concepts/` section is not a generic theory dump.
-
-It contains technical concepts studied because they appeared during labs or investigations.
+They are used to understand what specific actions produce at the system, log, and network level.
 
 Examples:
 
-* TCP connection behavior in PCAP analysis
-* DNS resolution during traffic reconstruction
-* HTTP requests, POSTs, uploads, and webshell behavior
-* TLS metadata and encrypted traffic analysis
-* SMB and Windows lateral movement basics
-* IP addressing, NAT, and traffic scope
+* Windows user and process activity
+* PowerShell and batch execution
+* Linux permissions and SSH behavior
+* service changes
+* scheduled tasks
+* basic network behavior
 
-Each concept should explain:
+## Concepts
 
-* why I studied it
-* what the core idea is
-* what it looks like during analysis
-* how it helps avoid wrong conclusions
+The `concepts/` section contains short technical notes linked to what appears during labs.
 
-## Tools Used
+It is not meant to be a generic theory dump.
+
+Current focus:
+
+* TCP, UDP, DNS, HTTP, TLS
+* SMB, Kerberos, LDAP, NTLM
+* ICMP, ARP, DHCP
+* RDP, SSH, QUIC
+* mail protocols
+* DCE/RPC and Windows network behavior
+
+Each page is written for quick consultation during analysis.
+
+## Tools
 
 * Wireshark
+* VirusTotal
+* ANY.RUN
+* MalwareBazaar / threat intel sources
 * VMware Workstation
 * Windows
 * Ubuntu
 * PowerShell
 * Linux shell
 * CyberDefenders labs
-* Security Onion planned for later monitoring work
 
-## Documentation Standard
+## Documentation Style
 
-For lab write-ups, the goal is to preserve the actual reasoning process rather than producing a polished report that hides how the answer was reached.
+The documentation preserves the investigation flow.
+
+I prefer to show:
+
+* what I observed
+* what looked suspicious
+* what I filtered or searched
+* what confirmed the conclusion
+* where the lab was unrealistic or too guided
+
+This is intentional: the objective is to document analytical process, not only clean final results.
 
 ## Current Status
 
 Completed / active:
 
-* PCAP analysis write-ups
-* CyberDefenders external labs
-* Windows internal lab tests
-* Ubuntu internal lab tests
-* basic investigation documentation
+* PCAP analysis labs
+* malware analysis labs
+* threat intelligence labs
+* Windows and Ubuntu internal lab tests
+* networking concepts for analysis
 
 Planned:
 
 * Security Onion deployment
 * more realistic internal traffic generation
-* malware traffic analysis
 * endpoint and network visibility correlation
-* reusable investigation methodology
+* reusable investigation workflows
 
 ## AI Usage Disclosure
 
@@ -146,3 +142,6 @@ The technical analysis, lab work, investigation process, troubleshooting, conclu
 This repository is for educational and defensive cybersecurity learning only.
 
 All internal exercises are performed in a controlled personal lab environment.
+
+[1]: https://github.com/VonFaFiller/cybersecurity-homelab/tree/main/docs/labs/external-labs "cybersecurity-homelab/docs/labs/external-labs at main · VonFaFiller/cybersecurity-homelab · GitHub"
+[2]: https://github.com/VonFaFiller/cybersecurity-homelab/tree/main "GitHub - VonFaFiller/cybersecurity-homelab: Cybersecurity home lab for blue team practice using VMware, Ubuntu, Windows and Security Onion. · GitHub"
